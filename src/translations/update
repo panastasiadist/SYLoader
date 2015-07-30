@@ -1,0 +1,16 @@
+#!/bin/bash
+
+TS="./ts/*.ts"
+
+for f in $TS
+do
+	filename=$(basename "$f")
+	extension="${filename##*.}"
+	filename="${filename%.*}"
+	echo "--------------------------";
+	echo "Updating TS file for $filename language";
+	rm ./language.ts 
+	lupdate ../SYLoader.pro -ts ./language.ts
+	lconvert -i ./language.ts ./ts/$filename.ts -o ./ts/$filename.ts
+
+done

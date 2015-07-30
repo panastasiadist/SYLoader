@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/header.png</file>
+        <file>resources/logo.png</file>
+        <file>resources/name.png</file>
+        <file>resources/delete-blue.png</file>
+        <file>resources/delete-orange.png</file>
+        <file>resources/download-blue.png</file>
+        <file>resources/download-orange.png</file>
+        <file>resources/empty-blue.png</file>
+        <file>resources/empty-orange.png</file>
+        <file>resources/info-blue.png</file>
+        <file>resources/info-orange.png</file>
+        <file>resources/settings-blue.png</file>
+        <file>resources/settings-orange.png</file>
+        <file>resources/stop-blue.png</file>
+        <file>resources/stop-orange.png</file>
+        <file>resources/update-blue.png</file>
+        <file>resources/update-orange.png</file>
+    </qresource>
+</RCC>
