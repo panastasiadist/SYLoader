@@ -15,7 +15,9 @@
         <file>resources/settings-orange.png</file>
         <file>resources/stop-blue.png</file>
         <file>resources/stop-orange.png</file>
-        <file>resources/update-blue.png</file>
-        <file>resources/update-orange.png</file>
+        <file>resources/facebook-blue.png</file>
+        <file>resources/facebook-orange.png</file>
+        <file>resources/twitter-blue.png</file>
+        <file>resources/twitter-orange.png</file>
     </qresource>
 </RCC>

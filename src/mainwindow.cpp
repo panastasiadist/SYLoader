@@ -29,6 +29,9 @@
 #include <QMessageBox>
 
 
+
+
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -60,6 +63,16 @@ MainWindow::MainWindow(QWidget *parent) :
             SIGNAL(clicked()),
             this,
             SLOT(onAboutClicked()));
+
+    connect(ui->btnTwitter,
+            SIGNAL(clicked()),
+            this,
+            SLOT(onTwitterClicked()));
+
+    connect(ui->btnFacebook,
+            SIGNAL(clicked()),
+            this,
+            SLOT(onFacebookClicked()));
 
     connect(MessageBus,
             SIGNAL(receive(QString)),
@@ -96,7 +109,11 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 
 
-bool MainWindow::eventFilter (QObject *object, QEvent *event)
+
+
+
+bool
+MainWindow::eventFilter (QObject *object, QEvent *event)
 {
     // We won't allow the program to close if downloading is in progress
     if (event->type() == QEvent::Close && object == this)
@@ -117,13 +134,21 @@ bool MainWindow::eventFilter (QObject *object, QEvent *event)
 }
 
 
+
+
+
 MainWindow::~MainWindow()
 {
     delete Settings;
     delete ui;
 }
 
-void MainWindow::onMessageBusReceive(QString msg)
+
+
+
+
+void
+MainWindow::onMessageBusReceive(QString msg)
 {
     if (msg == "parsing_started") {
         ui->statusBar->showMessage(tr("Preparing your new downloads..."));
@@ -139,7 +164,12 @@ void MainWindow::onMessageBusReceive(QString msg)
     }
 }
 
-void MainWindow::onMainClicked()
+
+
+
+
+void
+MainWindow::onMainClicked()
 {
     ui->container->setCurrentIndex(0);
     ui->btnMain->setVisible(false);
@@ -147,25 +177,50 @@ void MainWindow::onMainClicked()
 }
 
 
-void MainWindow::onUpdateCheckClicked()
-{
 
-}
 
-void MainWindow::onSettingsClicked()
+
+void
+MainWindow::onSettingsClicked()
 {
     ui->container->setCurrentIndex(1);
     ui->btnMain->setVisible(true);
     ui->lblFormTitle->setText(tr("Settings"));
 }
 
-void MainWindow::onAboutClicked()
+
+
+
+
+void
+MainWindow::onAboutClicked()
 {
     ui->container->setCurrentIndex(2);
     ui->btnMain->setVisible(true);
     ui->lblFormTitle->setText(tr("About"));
 
 }
+
+
+
+
+
+void
+MainWindow::onFacebookClicked()
+{
+    QDesktopServices::openUrl(QUrl(FACEBOOK_URL));
+}
+
+
+
+
+
+void
+MainWindow::onTwitterClicked()
+{
+    QDesktopServices::openUrl(QUrl(TWITTER_URL));
+}
+
 
 
 

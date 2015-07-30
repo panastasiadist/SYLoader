@@ -52,7 +52,8 @@ private slots:
     void onMainClicked();
     void onSettingsClicked();
     void onAboutClicked();
-    void onUpdateCheckClicked();
+    void onFacebookClicked();
+    void onTwitterClicked();
 };
 
 #endif // MAINWINDOW_H

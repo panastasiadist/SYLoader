@@ -30,6 +30,8 @@
 #define HOMEPAGE_URL "http://panastas91.github.io/SYLoader"
 #define DOWNLOADS_URL "http://panastas91.github.io/SYLoader"
 #define CONTACT_URL "https://twitter.com/panastasiadist"
+#define FACEBOOK_URL "https://www.facebook.com/groups/512464022107865"
+#define TWITTER_URL "https://twitter.com/hashtag/syloader"
 
 
 #if defined(_WIN32)
