@@ -26,9 +26,9 @@
 #define SOFTWARE_VERSION_MINOR 0
 #define SOFTWARE_VERSION_PATCH 0
 
-#define UPDATE_CHECK_URL "http://panastas91.github.io/syloader/lversion.html"
-#define HOMEPAGE_URL "http://panastas91.github.io/syloader"
-#define DOWNLOADS_URL "http://panastas91.github.io/syloader"
+#define UPDATE_CHECK_URL "http://panastas91.github.io/SYLoader/lversion.html"
+#define HOMEPAGE_URL "http://panastas91.github.io/SYLoader"
+#define DOWNLOADS_URL "http://panastas91.github.io/SYLoader"
 #define CONTACT_URL "https://twitter.com/panastasiadist"
 
 
