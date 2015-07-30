@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright 2015 Panagiotis Anastasiadis
- * This file is part of eTube Downloader.
+ * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
