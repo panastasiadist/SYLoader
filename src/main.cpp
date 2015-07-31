@@ -18,6 +18,7 @@
 
 #include "mainwindow.h"
 #include "global.h"
+#include "scheduler.h"
 #include <QApplication>
 #include <QTextCodec>
 #include <QTranslator>
@@ -30,6 +31,7 @@
 #include <QDir>
 
 QSettings *Settings;
+Scheduler *Tasks;
 Messenger *MessageBus;
 
 
@@ -47,6 +49,8 @@ main(int argc, char *argv[])
 
     Settings = new QSettings();
     MessageBus = new Messenger();
+    Tasks = new Scheduler();
+    Tasks->setConcurrentTasks(1);
 
 
     if (Settings->contains("download_path") == false) {
@@ -58,7 +62,7 @@ main(int argc, char *argv[])
 
 
     if (Settings->contains("sim_downloads") == false) {
-        Settings->setValue("sim_downloads", 3);
+        Settings->setValue("sim_downloads", 1);
     }
 
 

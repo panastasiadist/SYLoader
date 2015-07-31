@@ -70,9 +70,10 @@ MainForm::MainForm(QWidget *parent) :
             SLOT(onClipboardChanged(QClipboard::Mode)));
 
 
+
     _downloadsModel.setHorizontalHeaderItem(0, new QStandardItem(tr("Title")));
     _downloadsModel.setHorizontalHeaderItem(1, new QStandardItem(tr("Status")));
-    _downloadsModel.setHorizontalHeaderItem(2, new QStandardItem(tr("Download")));
+    _downloadsModel.setHorizontalHeaderItem(2, new QStandardItem(tr("Progress")));
     _downloadsModel.setHorizontalHeaderItem(3, new QStandardItem(tr("Speed")));
     _downloadsModel.setHorizontalHeaderItem(4, new QStandardItem(tr("ETA")));
 
@@ -81,13 +82,12 @@ MainForm::MainForm(QWidget *parent) :
     ui->tvwDownloads->verticalHeader()->setVisible(false);
     ui->tvwDownloads->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tvwDownloads->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->tvwDownloads->setColumnWidth(0, 165);
-    ui->tvwDownloads->setColumnWidth(1, 80);
-    ui->tvwDownloads->setColumnWidth(2, 70);
+    ui->tvwDownloads->setColumnWidth(0, 300);
+    ui->tvwDownloads->setColumnWidth(1, 90);
+    ui->tvwDownloads->setColumnWidth(2, 80);
     ui->tvwDownloads->setColumnWidth(3, 70);
-    ui->tvwDownloads->setColumnWidth(4, 60);
+    ui->tvwDownloads->setColumnWidth(4, 70);
     ui->tvwDownloads->setItemDelegate(&_progressItemDelegate);
-    //ui->txtUrl->setText("http://www.youtube.com/watch?v=YgqydMN5VQw&list=PL769F258F458825F2");
 
 
     // Set UI according on settings

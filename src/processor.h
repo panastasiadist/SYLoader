@@ -20,11 +20,13 @@
 #define PROCESSOR_H
 
 #include "download.h"
+#include "scheduler.h"
 #include <QObject>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 #include <QElapsedTimer>
 #include <QProcess>
+#include <QTemporaryFile>
 
 class Processor : public QObject
 {
@@ -45,6 +47,7 @@ public:
 
 
     Processor(const Download download, const QString savePath);
+    ~Processor();
 
     void start();
     void stop();
@@ -56,25 +59,24 @@ public:
 
 private:
     QString _savePath;
-    QNetworkAccessManager _videoNetworkManager;
-    QNetworkAccessManager _soundNetworkManager;
+    QNetworkAccessManager _networkManager;
     QNetworkReply *_videoNetworkReply;
     QNetworkReply *_soundNetworkReply;
+    QTemporaryFile *_soundFile;
+    QTemporaryFile *_videoFile;
 
     QElapsedTimer _speedElapsedTimer;
-    QProcess _convertProcess;
     Download _download;
     Status _status;
     qint64 _bytesDownloaded;
     qint64 _lastBytesDownloaded;
     qint64 _bytesTotal;
-
     qint64 _videoBytes;
     qint64 _soundBytes;
     qint64 _videoBytesReceived;
     qint64 _soundBytesReceived;
-
-
+    int _convertPid;
+    int _retryCount;
     bool _cancelationPending;
 
     QString getSaveFilepath(const QString &title, const QString &extension);
@@ -84,13 +86,16 @@ private:
     void download();
 
     bool isVideoMode();
+    bool isVideoValid();
 
 signals:
     void statusChanged();
 
 private slots:
-    void onDownloadNetworkManagerFinished(QNetworkReply *networkReply);
-    void onConvertCompleted(int exitCode, QProcess::ExitStatus exitStatus);
+    void onTimerTimeout();
+    void onDownloadFinished();
+    void onDownloadReadyRead();
+    void onStatusChanged(Scheduler::Status status, int pid, int exitCode);
     void onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal);
 };
 

@@ -47,6 +47,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->btnMain->setVisible(false);
 
 
+    restoreGeometry(Settings->value("window_geometry").toByteArray());
+    restoreState(Settings->value("window_state").toByteArray());
 
 
     connect(ui->btnMain,
@@ -81,11 +83,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 
-    // Attach event filters
     this->installEventFilter(this);
 
 
-
+#if !defined(NO_UPDATE_CHECK)
     if (Settings->value("autocheck_updates", QVariant(true)) == true)
     {
         bool update;
@@ -102,6 +103,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 QDesktopServices::openUrl(QUrl(DOWNLOADS_URL));
         }
     }
+#endif
 
     ui->statusBar->showMessage(
         tr("Download by copying YouTube URLs in your browser!"));
@@ -126,6 +128,8 @@ MainWindow::eventFilter (QObject *object, QEvent *event)
         }
         else
         {
+            Settings->setValue("window_geometry", saveGeometry());
+            Settings->setValue("window_state", saveState());
             Settings->sync();
         }
     }

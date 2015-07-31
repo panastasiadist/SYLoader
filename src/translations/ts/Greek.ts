@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1">
+<TS version="2.1" language="el_GR">
 <context>
     <name>AboutForm</name>
     <message>
@@ -77,6 +77,11 @@
         <location filename="mainform.cpp" line="56"/>
         <source>Status</source>
         <translation type="unfinished">Κατάσταση</translation>
+    </message>
+    <message>
+        <location filename="../mainform.cpp" line="76"/>
+        <source>Progress</source>
+        <translation type="unfinished">Πρόοδος</translation>
     </message>
     <message>
         <location filename="mainform.cpp" line="58"/>
@@ -207,6 +212,16 @@
 </context>
 <context>
     <name>Processor</name>
+    <message>
+        <location filename="../processor.cpp" line="82"/>
+        <source>A/S Error</source>
+        <translation type="unfinished">Σφάλμα A/S</translation>
+    </message>
+    <message>
+        <location filename="../processor.cpp" line="701"/>
+        <source>Queued</source>
+        <translation type="unfinished">Αναμονή</translation>
+    </message>
     <message>
         <location filename="processor.cpp" line="418"/>
         <source>Ready</source>

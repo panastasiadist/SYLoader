@@ -24,10 +24,12 @@
 #include <QTemporaryFile>
 #include <QtWidgets/QMessageBox>
 #include <QCoreApplication>
+#include <QTimer>
 #include <QDebug>
 
 
-
+#define MAX_RETRIES 10
+#define RETRY_INTERVAL 10000
 
 
 Processor::Processor(const Download d, const QString savePath)
@@ -35,9 +37,15 @@ Processor::Processor(const Download d, const QString savePath)
     // Initialize some variables
     _savePath = savePath;
     _download = d;
+    _retryCount = 0;
+    _soundNetworkReply = NULL;
+    _videoNetworkReply = NULL;
+    _soundFile = NULL;
+    _videoFile = NULL;
+
 
     // Set up slots
-    connect (&_videoNetworkManager,
+    /*connect (&_videoNetworkManager,
              SIGNAL(finished(QNetworkReply*)),
              this,
              SLOT(onDownloadNetworkManagerFinished(QNetworkReply*)));
@@ -50,13 +58,38 @@ Processor::Processor(const Download d, const QString savePath)
     connect (&_convertProcess,
              SIGNAL(finished(int, QProcess::ExitStatus)),
              this,
-             SLOT(onConvertCompleted(int, QProcess::ExitStatus)));
+             SLOT(onConvertCompleted(int, QProcess::ExitStatus)));*/
+
+    connect(Tasks,
+            SIGNAL(statusChanged(Scheduler::Status,int,int)),
+            this,
+            SLOT(onStatusChanged(Scheduler::Status,int,int)));
 
 
-    qDebug() << QString("Artist: %1, Coartist: %2, Title: %3")
-                .arg(d.artist, d.coartist, d.title);
+
 
     reset();
+
+
+    if (isVideoValid())
+    {
+        qDebug() << QString("Processing %1. Artist: %2. Coartist: %3. Title: %4")
+                    .arg(d.videoTitle, d.artist, d.coartist, d.title);
+    }
+    else
+    {
+        qDebug() << QString("Processor stopped on an A/S Error");
+        d.statusItem->setText(tr("A/S Error"));
+    }
+}
+
+
+
+
+
+Processor::~Processor()
+{
+    Tasks->disconnect(this);
 }
 
 
@@ -66,6 +99,11 @@ Processor::Processor(const Download d, const QString savePath)
 void
 Processor::start()
 {
+    // The video's information is not valid. We can't start.
+    if (!isVideoValid()) {
+        return;
+    }
+
     reset();
     download();
 }
@@ -77,6 +115,14 @@ Processor::start()
 void
 Processor::stop()
 {
+    /* The video's information is not valid.
+     * This processor never started.
+     */
+    if (!isVideoValid()) {
+        return;
+    }
+
+
     // Check if a cancelation has been already issued.
     if (_cancelationPending)
         return;
@@ -104,7 +150,8 @@ Processor::stop()
          * will not raise an IO Error.
          * statusChanged() will be emitted by the convertProcess SLOT.
          */
-        _convertProcess.terminate();
+        //_convertProcess.terminate();
+        Tasks->abort(_convertPid);
     }
     else if (_status == Ready)
     {
@@ -161,7 +208,7 @@ Processor::getStatus()
 
 
 void
-Processor::onDownloadNetworkManagerFinished(QNetworkReply *networkReply)
+Processor::onDownloadFinished()
 {
     bool finished = false;
     QNetworkReply::NetworkError videoError;
@@ -206,30 +253,59 @@ Processor::onDownloadNetworkManagerFinished(QNetworkReply *networkReply)
         }
         else
         {
+
+
             // The video and music streams of the video have been downloaded.
-            QTemporaryFile soundFile;
+            /*QTemporaryFile soundFile;
             QTemporaryFile videoFile;
+
+
+            _soundNetworkReply->open(QIODevice::ReadOnly);
+            QByteArray soundData = _soundNetworkReply->readAll();
+            QByteArray videoData;
+
+
+            if (soundData.length() == 0)
+            {
+                qDebug() << QString("Invalid sound data from %1")
+                            .arg(_soundNetworkReply->url().toString());
+                goto ErrorProcedure;
+            }
+
+
+            if (isVideoMode())
+            {
+                _videoNetworkReply->open(QIODevice::ReadOnly);
+                videoData = _videoNetworkReply->readAll();
+                if (videoData.length() == 0)
+                {
+                    qDebug() << QString("Invalid video data from %1")
+                                .arg(_videoNetworkReply->url().toString());
+                    goto ErrorProcedure;
+                }
+            }
+
+
+
 
 
             if (soundFile.open())
             {
-                QByteArray data = _soundNetworkReply->readAll();
-                soundFile.write(data);
+                soundFile.write(soundData);
                 soundFile.close();
                 soundFile.setAutoRemove(false);
             }
 
 
-            if (isVideoMode()) {
-
+            if (isVideoMode())
+            {
                 if (videoFile.open())
                 {
-                    QByteArray data = _videoNetworkReply->readAll();
-                    videoFile.write(data);
+                    videoFile.write(videoData);
                     videoFile.close();
                     videoFile.setAutoRemove(false);
                 }
-            }
+            }*/
 
             QString iargs = " -id3v2_version 3 -write_id3v1 1 ";
             QString filename = "";
@@ -256,32 +332,30 @@ Processor::onDownloadNetworkManagerFinished(QNetworkReply *networkReply)
                 filename = _download.videoTitle;
             }
 
-
+            QString command;
             if (isVideoMode())
             {
                 QString extension = _download.videoExtension;
                 QString savePath = getSaveFilepath(filename, extension);
-                QString vfilename = videoFile.fileName();
-                QString sfilename = soundFile.fileName();
+                QString vfilename = _videoFile->fileName();
+                QString sfilename = _soundFile->fileName();
+                _videoFile->close();
+                _soundFile->close();
                 QString args = "%1 -i \"%2\" -i \"%3\" -acodec copy -vcodec copy %4 \"%5\"";
-
-
-                _convertProcess.start(
-                    QString(args)
-                        .arg(FFMPEG_PATH, vfilename, sfilename, iargs, savePath));
+                command = QString(args)
+                            .arg(FFMPEG_PATH, vfilename, sfilename, iargs, savePath);
             }
             else
             {
                 QString extension = _download.convertExtension;
                 QString savePath = getSaveFilepath(filename, extension);
-                QString sfilename = soundFile.fileName();
-                QString command =
-                        QString("%1 -y -i \"%2\" %3 \"%4\"")
+                QString sfilename = _soundFile->fileName();
+                _soundFile->close();
+                command = QString("%1 -y -i \"%2\" %3 \"%4\"")
                             .arg(FFMPEG_PATH, sfilename, iargs, savePath);
-
-
-                _convertProcess.start(command);
             }
+
+            _convertPid = Tasks->enqueue(command);
 
             _status = Converting;
             setDisplay(Converting, 0, 0, 100);
@@ -306,26 +380,68 @@ Processor::onDownloadNetworkManagerFinished(QNetworkReply *networkReply)
 
 
 ErrorProcedure:
-    _status = ErrorConnection;
-    setDisplay(ErrorConnection, 0, 0, 0);
 
+
+    // If at least one downloader has errored, stop the other.
     if (videoError)
         _soundNetworkReply->abort();
 
     if (soundError && isVideoMode())
         _videoNetworkReply->abort();
 
-    emit statusChanged();
-    goto Cleanup;
+
+    if (_retryCount < MAX_RETRIES)
+    {
+        _retryCount++;
+
+        qDebug() << QString("Processor had an error connection. Retrying for %1 times in %2 ms")
+                    .arg(QString::number(_retryCount), QString::number(RETRY_INTERVAL));
+
+        QTimer *timer = new QTimer();
+        timer->setSingleShot(true);
+        timer->start(RETRY_INTERVAL);
+        return;
+    }
+    else
+    {
+        qDebug() << QString("Processor had an error connection. Max retries of %1 reached")
+                    .arg(MAX_RETRIES);
+
+        _status = ErrorConnection;
+        setDisplay(ErrorConnection, 0, 0, 0);
+        emit statusChanged();
+        goto Cleanup;
+    }
+
+
+
 
 
 Cleanup:
     disconnect(_soundNetworkReply);
+    if (_soundNetworkReply->isOpen()) {
+        _soundNetworkReply->close();
+    }
     _soundNetworkReply->deleteLater();
+    _soundNetworkReply = NULL;
+
+    if (_soundFile->isOpen())
+        _soundFile->close();
+    delete _soundFile;
+    _soundFile = NULL;
 
     if (isVideoMode()) {
         disconnect(_videoNetworkReply);
+        if (_videoNetworkReply->isOpen()) {
+            _videoNetworkReply->close();
+        }
         _videoNetworkReply->deleteLater();
+        _videoNetworkReply = NULL;
+
+        if (_videoFile->isOpen())
+            _videoFile->close();
+        delete _videoFile;
+        _videoFile = NULL;
     }
 
 }
@@ -334,15 +450,22 @@ Cleanup:
 
 
 
+
 void
-Processor::onConvertCompleted(int exitCode, QProcess::ExitStatus exitStatus)
+Processor::onStatusChanged(Scheduler::Status status, int pid, int exitCode)
 {
-    if (exitCode == 0)
+    if (pid != _convertPid)
+        return;
+
+
+    if (status == Scheduler::Started)
     {
-        _status = Complete;
-        setDisplay(Complete, 0, 0, 100);
+        _status = Converting;
+        setDisplay(Converting, 0, 0, 100);
+
+        qDebug() << "Converter started";
     }
-    else
+    else if (status == Scheduler::Finished)
     {
         if (_cancelationPending)
         {
@@ -351,8 +474,18 @@ Processor::onConvertCompleted(int exitCode, QProcess::ExitStatus exitStatus)
         }
         else
         {
-            _status = ErrorIO;
-            setDisplay(ErrorIO, 0, 0, 100);
+            if (exitCode == 0)
+            {
+                _status = Complete;
+                setDisplay(Complete, 0, 0, 100);
+            }
+            else
+            {
+                _status = ErrorIO;
+                setDisplay(ErrorIO, 0, 0, 100);
+
+                qDebug() << QString("Converter errored: %1").arg(exitCode);
+            }
         }
     }
 
@@ -368,6 +501,9 @@ Processor::onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal)
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(QObject::sender());
 
+    // May be 0, on a connection error or glitch;
+    if (bytesTotal == 0)
+        return;
 
     if (reply == _videoNetworkReply)
     {
@@ -393,7 +529,7 @@ Processor::onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal)
     }
 
 
-    if (_speedElapsedTimer.elapsed() > 900)
+    if (_speedElapsedTimer.elapsed() > 1000)
     {
         _bytesDownloaded = _videoBytesReceived + _soundBytesReceived;
 
@@ -416,24 +552,75 @@ Processor::onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal)
 
 
 
-void Processor::download()
+void
+Processor::onDownloadReadyRead()
 {
-    _bytesDownloaded = 0;
-    _lastBytesDownloaded = 0;
-    _bytesTotal = 0;
+    QByteArray soundData = _soundNetworkReply->readAll();
+    _soundFile->write(soundData);
+
+    if (isVideoMode())
+    {
+        QByteArray videoData = _videoNetworkReply->readAll();
+        _videoFile->write(videoData);
+    }
+}
+
+
+
+
+
+void
+Processor::onTimerTimeout()
+{
+    QTimer *timer = qobject_cast<QTimer*>(QObject::sender());
+    timer->deleteLater();
+
+    // Maybe a cancellation has been issued before the timeout.
+    if (_cancelationPending) {
+        return;
+    }
+
+    qDebug() << "Retrying download...";
+
+    reset();
+    download();
+}
+
+
+
+
+
+void
+Processor::download()
+{
     _speedElapsedTimer.start();
+
+    _soundFile = new QTemporaryFile();
+    _soundFile->setAutoRemove(false);
+    _soundFile->open();
+
 
 
     QNetworkRequest srequest;
     srequest.setUrl(QUrl(_download.soundUrl));
     srequest.setRawHeader("Accept-Charset", "utf-8");
     srequest.setRawHeader("charset", "utf-8");
-    _soundNetworkReply = _soundNetworkManager.get(srequest);
+    _soundNetworkReply = _networkManager.get(srequest);
 
     connect (_soundNetworkReply,
              SIGNAL(downloadProgress(qint64,qint64)),
              this,
              SLOT(onDownloadProgressChanged(qint64, qint64)));
+
+    connect (_soundNetworkReply,
+             SIGNAL(readyRead()),
+             this,
+             SLOT(onDownloadReadyRead()));
+
+    connect (_soundNetworkReply,
+             SIGNAL(finished()),
+             this,
+             SLOT(onDownloadFinished()));
 
 
     /* Video specific setup is needed only when downloading the video and not
@@ -441,16 +628,30 @@ void Processor::download()
      */
     if (isVideoMode())
     {
+        _videoFile = new QTemporaryFile();
+        _videoFile->setAutoRemove(false);
+        _videoFile->open();
+
         QNetworkRequest vrequest;
         vrequest.setUrl(QUrl(_download.videoUrl));
         vrequest.setRawHeader("Accept-Charset", "utf-8");
         vrequest.setRawHeader("charset", "utf-8");
-        _videoNetworkReply = _videoNetworkManager.get(vrequest);
+        _videoNetworkReply = _networkManager.get(vrequest);
 
         connect (_videoNetworkReply,
                  SIGNAL(downloadProgress(qint64,qint64)),
                  this,
                  SLOT(onDownloadProgressChanged(qint64, qint64)));
+
+        connect (_videoNetworkReply,
+                 SIGNAL(readyRead()),
+                 this,
+                 SLOT(onDownloadReadyRead()));
+
+        connect (_videoNetworkReply,
+                 SIGNAL(finished()),
+                 this,
+                 SLOT(onDownloadFinished()));
     }
 
 
@@ -497,7 +698,7 @@ Processor::setDisplay(Status status, qint64 eta, qint64 speed, qint64 progress)
     switch (status)
     {
         case Ready:
-            s = tr("Ready");
+            s = tr("Queued");
             break;
         case Downloading:
             s = tr("Downloading");
@@ -564,4 +765,24 @@ bool
 Processor::isVideoMode()
 {
     return _download.convertExtension == "";
+}
+
+
+
+
+
+bool
+Processor::isVideoValid()
+{
+    bool hasVideoUrl = !_download.videoUrl.isEmpty();
+    bool hasSoundUrl = !_download.soundUrl.isEmpty();
+    bool hasTitle = !_download.videoTitle.isEmpty();
+    bool hasVideoExtension = !_download.videoExtension.isEmpty();
+    bool hasSoundExtension = !_download.soundExtension.isEmpty();
+
+    return hasVideoUrl &&
+           hasSoundUrl &&
+           hasTitle &&
+           hasVideoExtension &&
+           hasSoundExtension;
 }

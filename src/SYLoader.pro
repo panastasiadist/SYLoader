@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     mainform.cpp \
     aboutform.cpp \
     settingsform.cpp \
-    messenger.cpp
+    messenger.cpp \
+    scheduler.cpp
 
 HEADERS  += mainwindow.h \
     download.h \
@@ -36,7 +37,8 @@ HEADERS  += mainwindow.h \
     mainform.h \
     aboutform.h \
     settingsform.h \
-    messenger.h
+    messenger.h \
+    scheduler.h
 
 FORMS    += mainwindow.ui \
     mainform.ui \
@@ -45,3 +47,9 @@ FORMS    += mainwindow.ui \
 
 RESOURCES += \
     resources.qrc
+
+RC_ICONS = logo.ico
+
+# Uncomment it if you want update check disabled
+# Usefull if you need to have a package manager specific build
+#QMAKE_CXXFLAGS += -DNO_UPDATE_CHECK

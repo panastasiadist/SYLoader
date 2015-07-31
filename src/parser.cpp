@@ -27,8 +27,9 @@
 #include <QTextStream>
 #include <QList>
 #include <QRegularExpression>
+#include <QDebug>
 
-
+#define MAX_RETRIES 10
 
 
 Parser::Parser()
@@ -36,7 +37,9 @@ Parser::Parser()
     connect(&_process,
             SIGNAL(finished(int, QProcess::ExitStatus)),
             this,
-            SLOT(onProcessFinished(int, QProcess::ExitStatus)));
+            SLOT(onProcessFinished(int)));
+
+    _retryCount = 0;
 }
 
 
@@ -45,8 +48,10 @@ Parser::Parser()
 void
 Parser::parse(QString url)
 {
+    _url = url;
+
     QString ydlExecutable = "youtube-dl";
-    QString format = "%1 --no-warnings --prefer-insecure -J %2";
+    QString format = "%1 --no-warnings --prefer-insecure -i -J \"%2\"";
 
     _process.start(QString(format).arg(ydlExecutable, url));
 
@@ -57,13 +62,41 @@ Parser::parse(QString url)
 
 
 void
-Parser::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
+Parser::onProcessFinished(int exitCode)
 {
     QByteArray data = _process.readAllStandardOutput();
     QJsonDocument doc = QJsonDocument::fromJson(QString(data).toUtf8());
     QJsonObject odoc = doc.object();
     QList<Download> downloads;
     QJsonArray entries;
+
+    qDebug() << QString("Parser finished with result: %1")
+                .arg(QString::number(exitCode));
+
+
+    /* youtube-dl may return a result different to 0 if it finds a non critical problem.
+     * A non critical problem is when a video is not available, deleted, blocked.
+     * Then youtube-dl ignores it but its output is valid for the rest of our code
+     * So any error checking will be performed from our code against the returned data
+     */
+    /*if (exitCode != 0)
+    {
+        if (_retryCount < MAX_RETRIES)
+        {
+            _retryCount++;
+            qDebug() << QString("Parser errored: %1. Retry %2 issued")
+                        .arg(exitCode, _retryCount);
+            parse(_url);
+        }
+        else
+        {
+            qDebug() << QString("Parser errored: %1. Max retries of %2 reached")
+                        .arg(exitCode, MAX_RETRIES);
+        }
+
+        return;
+    }*/
+
 
     QJsonValue t = odoc.value("entries");
     if (t.isUndefined())
@@ -217,6 +250,27 @@ Parser::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 
             }
         }
+
+
+        /* The minimum information required by the rest of the software.
+         * If for some reason, youtube-dl has exitted normally but has
+         * given empty data for a download, then retry parsing.
+         * Most often this happens because of a deleted or not available video.
+         */
+        bool eVideoUrl = download.videoUrl.isEmpty();
+        bool eSoundUrl = download.soundUrl.isEmpty();
+        bool eTitle = download.videoTitle.isEmpty();
+        bool eVideoExtension = download.videoExtension.isEmpty();
+        bool eSoundExtension = download.soundExtension.isEmpty();
+
+        if (eVideoUrl || eSoundUrl || eTitle || eVideoExtension || eSoundExtension)
+        {
+            qDebug() << QString("Parsing requirements error for %1. Ignoring...")
+                        .arg(download.normalUrl);
+
+            continue;
+        }
+
 
         downloads.append(download);
 

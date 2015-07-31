@@ -20,6 +20,7 @@
 #define GLOBAL_H
 
 #include "messenger.h"
+#include "scheduler.h"
 #include <QSettings>
 
 #define SOFTWARE_VERSION_MAJOR 1
@@ -43,6 +44,7 @@
 
 extern QSettings *Settings;
 extern Messenger *MessageBus;
+extern Scheduler *Tasks;
 
 
 

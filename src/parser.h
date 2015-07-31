@@ -35,12 +35,14 @@ public:
 
 private:
     QProcess _process;
+    QString _url;
+    int _retryCount;
 
 signals:
     void finished(QList<Download> downloads);
 
 public slots:
-    void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void onProcessFinished(int exitCode);
 };
 
 #endif // PARSER_H

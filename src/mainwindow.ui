@@ -77,6 +77,10 @@
   <property name="windowTitle">
    <string>SYLoader</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/resources/logo.png</normaloff>:/resources/logo.png</iconset>
+  </property>
   <widget class="QWidget" name="widget">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
