@@ -51,7 +51,7 @@ Parser::parse(QString url)
     _url = url;
 
     QString ydlExecutable = "youtube-dl";
-    QString format = "%1 --no-warnings --prefer-insecure -i -J \"%2\"";
+    QString format = "%1 --no-warnings --prefer-insecure --no-check-certificate -i -J \"%2\"";
 
     _process.start(QString(format).arg(ydlExecutable, url));
 

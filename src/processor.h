@@ -92,6 +92,7 @@ signals:
     void statusChanged();
 
 private slots:
+    void onDownloadSslErrors(const QList<QSslError> errors);
     void onTimerTimeout();
     void onDownloadFinished();
     void onDownloadReadyRead();

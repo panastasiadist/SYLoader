@@ -28,7 +28,7 @@
 #include <QDebug>
 
 
-#define MAX_RETRIES 10
+#define MAX_RETRIES 3
 #define RETRY_INTERVAL 10000
 
 
@@ -44,21 +44,6 @@ Processor::Processor(const Download d, const QString savePath)
     _videoFile = NULL;
 
 
-    // Set up slots
-    /*connect (&_videoNetworkManager,
-             SIGNAL(finished(QNetworkReply*)),
-             this,
-             SLOT(onDownloadNetworkManagerFinished(QNetworkReply*)));
-
-    connect (&_soundNetworkManager,
-             SIGNAL(finished(QNetworkReply*)),
-             this,
-             SLOT(onDownloadNetworkManagerFinished(QNetworkReply*)));
-
-    connect (&_convertProcess,
-             SIGNAL(finished(int, QProcess::ExitStatus)),
-             this,
-             SLOT(onConvertCompleted(int, QProcess::ExitStatus)));*/
 
     connect(Tasks,
             SIGNAL(statusChanged(Scheduler::Status,int,int)),
@@ -142,6 +127,8 @@ Processor::stop()
          */
         if (isVideoMode())
             _videoNetworkReply->abort();
+
+        _status = Canceled;
     }
     else if (_status == Converting)
     {
@@ -152,14 +139,19 @@ Processor::stop()
          */
         //_convertProcess.terminate();
         Tasks->abort(_convertPid);
+
+        _status = Canceled;
     }
     else if (_status == Ready)
     {
         // If the processor hasn't run yet, just mark it as canceled
         _status = Canceled;
-        setDisplay(Canceled, 0, 0, 0);
-        emit statusChanged();
+        //setDisplay(Canceled, 0, 0, 0);
+        //emit statusChanged();
     }
+
+    setDisplay(Canceled, 0, 0, 0);
+    emit statusChanged();
 
 }
 
@@ -241,9 +233,9 @@ Processor::onDownloadFinished()
             soundError == QNetworkReply::OperationCanceledError)
         {
             // User has canceled downloading
-            _status = Canceled;
-            setDisplay(Canceled, 0, 0, 0);
-            emit statusChanged();
+            //_status = Canceled;
+            //setDisplay(Canceled, 0, 0, 0);
+            //emit statusChanged();
             goto Cleanup;
         }
         else if (videoError || soundError)
@@ -253,7 +245,22 @@ Processor::onDownloadFinished()
         }
         else
         {
+            if (_soundBytesReceived == 0)
+            {
+                qDebug() << QString("Invalid sound data from %1")
+                            .arg(_soundNetworkReply->url().toString());
+                goto ErrorProcedure;
+            }
 
+            if (isVideoMode())
+            {
+                if (_videoBytesReceived == 0)
+                {
+                    qDebug() << QString("Invalid video data from %1")
+                                .arg(_videoNetworkReply->url().toString());
+                    goto ErrorProcedure;
+                }
+            }
 
             // The video and music streams of the video have been downloaded.
             /*QTemporaryFile soundFile;
@@ -394,12 +401,17 @@ ErrorProcedure:
     {
         _retryCount++;
 
-        qDebug() << QString("Processor had an error connection. Retrying for %1 times in %2 ms")
+        qDebug() << QString("Processor had an error connection. Retrying for %1 time in %2 ms")
                     .arg(QString::number(_retryCount), QString::number(RETRY_INTERVAL));
 
         QTimer *timer = new QTimer();
         timer->setSingleShot(true);
         timer->start(RETRY_INTERVAL);
+        connect(timer,
+                SIGNAL(timeout()),
+                this,
+                SLOT(onTimerTimeout()));
+
         return;
     }
     else
@@ -467,6 +479,21 @@ Processor::onStatusChanged(Scheduler::Status status, int pid, int exitCode)
     }
     else if (status == Scheduler::Finished)
     {
+        if (_cancelationPending) {
+            return;
+        }
+
+        if (exitCode == 0)
+        {
+            _status = Complete;
+        }
+        else
+        {
+            qDebug() << QString("Converter errored: %1").arg(exitCode);
+            _status = ErrorIO;
+        }
+
+        /*
         if (_cancelationPending)
         {
             _status = Canceled;
@@ -486,9 +513,10 @@ Processor::onStatusChanged(Scheduler::Status status, int pid, int exitCode)
 
                 qDebug() << QString("Converter errored: %1").arg(exitCode);
             }
-        }
+        }*/
     }
 
+    setDisplay(_status, 0, 0, 100);
     emit statusChanged();
 }
 
@@ -568,12 +596,26 @@ Processor::onDownloadReadyRead()
 
 
 
+void
+Processor::onDownloadSslErrors(const QList<QSslError> errors)
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply*>(QObject::sender());
+    reply->ignoreSslErrors();
+
+    qDebug() << QString("SSL error on %1")
+                .arg(reply->url().toString());
+}
+
+
+
 
 void
 Processor::onTimerTimeout()
 {
     QTimer *timer = qobject_cast<QTimer*>(QObject::sender());
+    timer->disconnect();
     timer->deleteLater();
+
 
     // Maybe a cancellation has been issued before the timeout.
     if (_cancelationPending) {
@@ -603,8 +645,11 @@ Processor::download()
 
     QNetworkRequest srequest;
     srequest.setUrl(QUrl(_download.soundUrl));
+    srequest.setRawHeader("Accept", "*/*");
+    srequest.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
+    srequest.setRawHeader("Accept-Language", "en-US,en;q=0.8");
     srequest.setRawHeader("Accept-Charset", "utf-8");
-    srequest.setRawHeader("charset", "utf-8");
+    srequest.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36");
     _soundNetworkReply = _networkManager.get(srequest);
 
     connect (_soundNetworkReply,
@@ -621,6 +666,11 @@ Processor::download()
              SIGNAL(finished()),
              this,
              SLOT(onDownloadFinished()));
+
+    connect (_soundNetworkReply,
+             SIGNAL(sslErrors(QList<QSslError>)),
+             this,
+             SLOT(onDownloadSslErrors(QList<QSslError>)));
 
 
     /* Video specific setup is needed only when downloading the video and not
@@ -652,6 +702,11 @@ Processor::download()
                  SIGNAL(finished()),
                  this,
                  SLOT(onDownloadFinished()));
+
+        connect (_videoNetworkReply,
+                 SIGNAL(sslErrors(QList<QSslError>)),
+                 this,
+                 SLOT(onDownloadSslErrors(QList<QSslError>)));
     }
 
 
