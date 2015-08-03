@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     aboutform.cpp \
     settingsform.cpp \
     messenger.cpp \
-    scheduler.cpp
+    scheduler.cpp \
+    gatewaypool.cpp
 
 HEADERS  += mainwindow.h \
     download.h \
@@ -38,7 +39,8 @@ HEADERS  += mainwindow.h \
     aboutform.h \
     settingsform.h \
     messenger.h \
-    scheduler.h
+    scheduler.h \
+    gatewaypool.h
 
 FORMS    += mainwindow.ui \
     mainform.ui \

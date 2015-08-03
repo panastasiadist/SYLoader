@@ -31,7 +31,7 @@ class Parser : public QObject
 
 public:
     Parser();
-    void parse(QString);
+    void parse(QString url);
 
 private:
     QProcess _process;

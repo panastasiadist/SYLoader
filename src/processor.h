@@ -34,19 +34,20 @@ class Processor : public QObject
 
 
 public:
-    enum Status {
+    enum Status
+    {
         Ready,
         Downloading,
         Converting,
         Complete,
         Canceled,
         ErrorIO,
-        ErrorConnection,
+        ErrorConnection
     };
 
 
 
-    Processor(const Download download, const QString savePath);
+    Processor(Download download, QString savePath);
     ~Processor();
 
     void start();
@@ -59,7 +60,7 @@ public:
 
 private:
     QString _savePath;
-    QNetworkAccessManager _networkManager;
+    QNetworkAccessManager _gateway;
     QNetworkReply *_videoNetworkReply;
     QNetworkReply *_soundNetworkReply;
     QTemporaryFile *_soundFile;
@@ -79,7 +80,7 @@ private:
     int _retryCount;
     bool _cancelationPending;
 
-    QString getSaveFilepath(const QString &title, const QString &extension);
+    QString getOutputPath(const QString &title, const QString &extension);
     QString getConversionExtension();
     void setDisplay(Status status, qint64 eta, qint64 speed, qint64 progress);
 

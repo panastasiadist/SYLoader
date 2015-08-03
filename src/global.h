@@ -21,6 +21,7 @@
 
 #include "messenger.h"
 #include "scheduler.h"
+#include "gatewaypool.h"
 #include <QSettings>
 
 #define SOFTWARE_VERSION_MAJOR 1
@@ -45,7 +46,7 @@
 extern QSettings *Settings;
 extern Messenger *MessageBus;
 extern Scheduler *Tasks;
-
+extern GatewayPool *Gateway;
 
 
 #endif // GLOBAL_H

@@ -41,9 +41,9 @@ Updater::Updater()
 bool
 Updater::checkForUpdates(bool &update)
 {
-    QNetworkAccessManager manager;
     QEventLoop loop;
-    QNetworkReply *updateReply = manager.get(
+    //QNetworkAccessManager gateway;
+    QNetworkReply *updateReply = Gateway->get(
         QNetworkRequest(QUrl(UPDATE_CHECK_URL)));
     QObject::connect(updateReply, SIGNAL(finished()), &loop, SLOT(quit()));
 
@@ -55,6 +55,7 @@ Updater::checkForUpdates(bool &update)
 
     QByteArray replyBytes = updateReply->readAll();
     QString replyString (replyBytes);
+    updateReply->deleteLater();
 
     QStringList versionDigits = replyString.split(".", QString::SkipEmptyParts);
 

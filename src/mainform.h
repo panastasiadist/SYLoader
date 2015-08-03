@@ -52,17 +52,13 @@ private:
     QList<QString> _registeredUrls;
 
 
-
+    ProcessorStats getProcessorStats();
     QString canonicalizeUrl(QString url);
+    bool isValidUrl(QString url);
     void registerAndParseUrl(QString url);
     void doDownloadsFinished();
     void applyCurrentMode();
-    bool isValidUrl(QString url);
     void processDownloads();
-    ProcessorStats getProcessorStats();
-
-
-
 
 private slots:
     void onParserFinished(QList<Download> downloads);

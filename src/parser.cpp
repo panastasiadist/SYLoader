@@ -79,23 +79,6 @@ Parser::onProcessFinished(int exitCode)
      * Then youtube-dl ignores it but its output is valid for the rest of our code
      * So any error checking will be performed from our code against the returned data
      */
-    /*if (exitCode != 0)
-    {
-        if (_retryCount < MAX_RETRIES)
-        {
-            _retryCount++;
-            qDebug() << QString("Parser errored: %1. Retry %2 issued")
-                        .arg(exitCode, _retryCount);
-            parse(_url);
-        }
-        else
-        {
-            qDebug() << QString("Parser errored: %1. Max retries of %2 reached")
-                        .arg(exitCode, MAX_RETRIES);
-        }
-
-        return;
-    }*/
 
 
     QJsonValue t = odoc.value("entries");

@@ -32,7 +32,7 @@
 #define RETRY_INTERVAL 10000
 
 
-Processor::Processor(const Download d, const QString savePath)
+Processor::Processor(Download d, QString savePath)
 {
     // Initialize some variables
     _savePath = savePath;
@@ -43,17 +43,13 @@ Processor::Processor(const Download d, const QString savePath)
     _soundFile = NULL;
     _videoFile = NULL;
 
-
+    reset();
 
     connect(Tasks,
             SIGNAL(statusChanged(Scheduler::Status,int,int)),
             this,
             SLOT(onStatusChanged(Scheduler::Status,int,int)));
 
-
-
-
-    reset();
 
 
     if (isVideoValid())
@@ -117,14 +113,10 @@ Processor::stop()
 
     if (_status == Downloading)
     {
-        /* Call the downloading managers to abort downloading.
-         * statusChanged() will be emitted by the managers.
-         */
+        // Call the downloading managers to abort downloading.
         _soundNetworkReply->abort();
 
-        /* The video download manager has been activated to download the video
-         * stream of a video only if video mode is enabled.
-         */
+        // The video download manager has been activated to download the video
         if (isVideoMode())
             _videoNetworkReply->abort();
 
@@ -135,9 +127,7 @@ Processor::stop()
         /* Call the converting process to terminate.
          * Because we have set cancelation pending, the termination process
          * will not raise an IO Error.
-         * statusChanged() will be emitted by the convertProcess SLOT.
          */
-        //_convertProcess.terminate();
         Tasks->abort(_convertPid);
 
         _status = Canceled;
@@ -146,8 +136,6 @@ Processor::stop()
     {
         // If the processor hasn't run yet, just mark it as canceled
         _status = Canceled;
-        //setDisplay(Canceled, 0, 0, 0);
-        //emit statusChanged();
     }
 
     setDisplay(Canceled, 0, 0, 0);
@@ -233,9 +221,6 @@ Processor::onDownloadFinished()
             soundError == QNetworkReply::OperationCanceledError)
         {
             // User has canceled downloading
-            //_status = Canceled;
-            //setDisplay(Canceled, 0, 0, 0);
-            //emit statusChanged();
             goto Cleanup;
         }
         else if (videoError || soundError)
@@ -245,6 +230,12 @@ Processor::onDownloadFinished()
         }
         else
         {
+            /* It happens that the downloaders finish without an error but with
+             * no data downloaded. I've noticed that the video is still
+             * available for download. Don't know why this happens.
+             * Just check for this behavior and take action.
+             */
+
             if (_soundBytesReceived == 0)
             {
                 qDebug() << QString("Invalid sound data from %1")
@@ -262,57 +253,6 @@ Processor::onDownloadFinished()
                 }
             }
 
-            // The video and music streams of the video have been downloaded.
-            /*QTemporaryFile soundFile;
-            QTemporaryFile videoFile;
-
-
-            _soundNetworkReply->open(QIODevice::ReadOnly);
-            QByteArray soundData = _soundNetworkReply->readAll();
-            QByteArray videoData;
-
-
-            if (soundData.length() == 0)
-            {
-                qDebug() << QString("Invalid sound data from %1")
-                            .arg(_soundNetworkReply->url().toString());
-                goto ErrorProcedure;
-            }
-
-
-            if (isVideoMode())
-            {
-                _videoNetworkReply->open(QIODevice::ReadOnly);
-                videoData = _videoNetworkReply->readAll();
-                if (videoData.length() == 0)
-                {
-                    qDebug() << QString("Invalid video data from %1")
-                                .arg(_videoNetworkReply->url().toString());
-                    goto ErrorProcedure;
-                }
-            }
-
-
-
-
-
-            if (soundFile.open())
-            {
-                soundFile.write(soundData);
-                soundFile.close();
-                soundFile.setAutoRemove(false);
-            }
-
-
-            if (isVideoMode())
-            {
-                if (videoFile.open())
-                {
-                    videoFile.write(videoData);
-                    videoFile.close();
-                    videoFile.setAutoRemove(false);
-                }
-            }*/
 
             QString iargs = " -id3v2_version 3 -write_id3v1 1 ";
             QString filename = "";
@@ -343,19 +283,19 @@ Processor::onDownloadFinished()
             if (isVideoMode())
             {
                 QString extension = _download.videoExtension;
-                QString savePath = getSaveFilepath(filename, extension);
+                QString savePath = getOutputPath(filename, extension);
                 QString vfilename = _videoFile->fileName();
                 QString sfilename = _soundFile->fileName();
                 _videoFile->close();
                 _soundFile->close();
                 QString args = "%1 -i \"%2\" -i \"%3\" -acodec copy -vcodec copy %4 \"%5\"";
                 command = QString(args)
-                            .arg(FFMPEG_PATH, vfilename, sfilename, iargs, savePath);
+                          .arg(FFMPEG_PATH, vfilename, sfilename, iargs, savePath);
             }
             else
             {
                 QString extension = _download.convertExtension;
-                QString savePath = getSaveFilepath(filename, extension);
+                QString savePath = getOutputPath(filename, extension);
                 QString sfilename = _soundFile->fileName();
                 _soundFile->close();
                 command = QString("%1 -y -i \"%2\" %3 \"%4\"")
@@ -402,7 +342,8 @@ ErrorProcedure:
         _retryCount++;
 
         qDebug() << QString("Processor had an error connection. Retrying for %1 time in %2 ms")
-                    .arg(QString::number(_retryCount), QString::number(RETRY_INTERVAL));
+                    .arg(QString::number(_retryCount),
+                         QString::number(RETRY_INTERVAL));
 
         QTimer *timer = new QTimer();
         timer->setSingleShot(true);
@@ -430,28 +371,23 @@ ErrorProcedure:
 
 
 Cleanup:
-    disconnect(_soundNetworkReply);
-    if (_soundNetworkReply->isOpen()) {
-        _soundNetworkReply->close();
-    }
     _soundNetworkReply->deleteLater();
     _soundNetworkReply = NULL;
 
     if (_soundFile->isOpen())
         _soundFile->close();
+
     delete _soundFile;
     _soundFile = NULL;
 
+
     if (isVideoMode()) {
-        disconnect(_videoNetworkReply);
-        if (_videoNetworkReply->isOpen()) {
-            _videoNetworkReply->close();
-        }
         _videoNetworkReply->deleteLater();
         _videoNetworkReply = NULL;
 
         if (_videoFile->isOpen())
             _videoFile->close();
+
         delete _videoFile;
         _videoFile = NULL;
     }
@@ -492,28 +428,6 @@ Processor::onStatusChanged(Scheduler::Status status, int pid, int exitCode)
             qDebug() << QString("Converter errored: %1").arg(exitCode);
             _status = ErrorIO;
         }
-
-        /*
-        if (_cancelationPending)
-        {
-            _status = Canceled;
-            setDisplay(Canceled, 0, 0, 100);
-        }
-        else
-        {
-            if (exitCode == 0)
-            {
-                _status = Complete;
-                setDisplay(Complete, 0, 0, 100);
-            }
-            else
-            {
-                _status = ErrorIO;
-                setDisplay(ErrorIO, 0, 0, 100);
-
-                qDebug() << QString("Converter errored: %1").arg(exitCode);
-            }
-        }*/
     }
 
     setDisplay(_status, 0, 0, 100);
@@ -650,7 +564,7 @@ Processor::download()
     srequest.setRawHeader("Accept-Language", "en-US,en;q=0.8");
     srequest.setRawHeader("Accept-Charset", "utf-8");
     srequest.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36");
-    _soundNetworkReply = _networkManager.get(srequest);
+    _soundNetworkReply = Gateway->get(srequest);
 
     connect (_soundNetworkReply,
              SIGNAL(downloadProgress(qint64,qint64)),
@@ -686,7 +600,7 @@ Processor::download()
         vrequest.setUrl(QUrl(_download.videoUrl));
         vrequest.setRawHeader("Accept-Charset", "utf-8");
         vrequest.setRawHeader("charset", "utf-8");
-        _videoNetworkReply = _networkManager.get(vrequest);
+        _videoNetworkReply = Gateway->get(vrequest);
 
         connect (_videoNetworkReply,
                  SIGNAL(downloadProgress(qint64,qint64)),
@@ -720,7 +634,7 @@ Processor::download()
 
 
 QString
-Processor::getSaveFilepath(const QString &title, const QString &extension)
+Processor::getOutputPath(const QString &title, const QString &extension)
 {
     QString separator = QDir::separator();
     QString cleanFilename = Utility::cleanFilename(title);

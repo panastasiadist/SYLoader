@@ -112,6 +112,10 @@ MainForm::MainForm(QWidget *parent) :
 
 MainForm::~MainForm()
 {
+    foreach (Processor *processor, _processors){
+        processor->deleteLater();
+    }
+
     delete ui;
 }
 
@@ -297,7 +301,7 @@ MainForm::onDeleteClicked()
                 if (status != Processor::Downloading &&
                     status != Processor::Converting)
                 {
-                    disconnect(processor);
+                    processor->disconnect();
                     _processors.removeOne(processor);
                     _registeredUrls.removeOne(download->normalUrl);
                     _downloadsModel.removeRow(modelIndex.row());
@@ -352,7 +356,7 @@ MainForm::onClearClicked()
 
     foreach (Processor *processor, _processors)
     {
-        disconnect(processor);
+        processor->disconnect();
         processor->deleteLater();
     }
 
@@ -681,6 +685,12 @@ MainForm::processDownloads()
         int availableSlots = simDownloads - downloading;
         int newDownloadSlots = 0;
 
+        /* It may be less than zero if the user has decreased concurrent
+         * downloads while downloading has started
+         */
+        if (availableSlots <= 0)
+            return;
+
         if (availableSlots >= ready) {
             newDownloadSlots = ready;
         } else {
@@ -689,15 +699,14 @@ MainForm::processDownloads()
 
         foreach (Processor *processor, _processors)
         {
-            if (newDownloadSlots == 0) {
-                break;
-            }
-
             if (processor->getStatus() == Processor::Ready)
             {
                 processor->start();
                 newDownloadSlots--;
             }
+
+            if (newDownloadSlots == 0)
+                break;
         }
     }
 }

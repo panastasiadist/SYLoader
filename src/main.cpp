@@ -16,8 +16,8 @@
  * along with SYLoader.  If not, see http://www.gnu.org/licenses.
  ******************************************************************************/
 
-#include "mainwindow.h"
 #include "global.h"
+#include "mainwindow.h"
 #include "scheduler.h"
 #include <QApplication>
 #include <QTextCodec>
@@ -33,9 +33,7 @@
 QSettings *Settings;
 Scheduler *Tasks;
 Messenger *MessageBus;
-
-
-
+GatewayPool *Gateway;
 
 
 int
@@ -49,6 +47,7 @@ main(int argc, char *argv[])
 
     Settings = new QSettings();
     MessageBus = new Messenger();
+    Gateway = new GatewayPool();
     Tasks = new Scheduler();
     Tasks->setConcurrentTasks(1);
 

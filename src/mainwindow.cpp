@@ -143,7 +143,11 @@ MainWindow::eventFilter (QObject *object, QEvent *event)
 
 MainWindow::~MainWindow()
 {
+    disconnect(MessageBus);
+
     delete Settings;
+    delete Tasks;
+    delete MessageBus;
     delete ui;
 }
 
