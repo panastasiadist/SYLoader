@@ -22,7 +22,7 @@
 
 * Windows XP+
 * Linux x86/x86_64
-* Virtually any POSIX system supported by Qt and GCC.
+* Virtually any POSIX system supported by Qt and a proper C++ compiler.
 
 ## Installation
 
@@ -31,7 +31,7 @@ Choose a package for your Windows or Linux system [here](http://panastas91.githu
 ## Development & Requirements
 
 * Qt 5.0+
-* GCC
+* C++ compiler
 
 ## Involve
 
@@ -42,3 +42,7 @@ Do you like SYLoader? You could:
 * Create pull requests.
 * Create a translation in your own language.
 * Create and submit a package for your favorite Linux distribution.
+
+## License
+
+GNU General Public License v2.0
