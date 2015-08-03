@@ -52,6 +52,9 @@ RESOURCES += \
 
 RC_ICONS = logo.ico
 
-# Uncomment it if you want update check disabled
+# Comment it if you want update check disabled
 # Usefull if you need to have a package manager specific build
-#QMAKE_CXXFLAGS += -DNO_UPDATE_CHECK
+QMAKE_CXXFLAGS += -DWITH_UPDATE_CHECK
+
+# Comment it if you don't distribute OpenSSL binaries with the software
+QMAKE_CXXFLAGS += -DWITH_OPENSSL_NOTICE
