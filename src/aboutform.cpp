@@ -37,7 +37,7 @@
 #include <QDesktopServices>
 #include <QMessageBox>
 #include <QUrl>
-
+#include <QFile>
 
 
 
@@ -63,11 +63,19 @@ AboutForm::AboutForm(QWidget *parent) :
              this,
              SLOT(onLicenseClicked()));
 
-    #if defined(WITH_OPENSSL_NOTICE)
-        ui->lblOpenSSLNotice->setVisible(true);
-    #else
-        ui->lblOpenSSLNotice->setVisible(false);
-    #endif
+#if defined(WITH_OPENSSL_NOTICE)
+    ui->lblOpenSSLNotice->setVisible(true);
+#else
+    ui->lblOpenSSLNotice->setVisible(false);
+#endif
+
+    QFile file("CONTRIBUTORS.txt");
+    if(file.open(QIODevice::ReadOnly))
+    {
+        QByteArray bytes = file.readAll();
+        ui->txtContributors->setText(QString(bytes));
+        file.close();
+    }
 
 }
 

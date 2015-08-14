@@ -100,7 +100,10 @@ Processor::start()
     }
 
     reset();
-    download();
+
+    if (_status == Ready) {
+        download();
+    }
 }
 
 
@@ -164,7 +167,6 @@ Processor::stop()
 void
 Processor::reset()
 {
-    _status = Ready;
     _videoBytes = 0;
     _soundBytes = 0;
     _bytesTotal = 0;
@@ -174,7 +176,49 @@ Processor::reset()
     _lastBytesDownloaded = 0;
     _cancelationPending = false;
 
-    setDisplay(Ready, 0, 0, 0);
+
+    QString filename = "";
+
+    bool hasArtist = !_download.artist.isEmpty();
+    bool hasTitle = !_download.title.isEmpty();
+    bool hasCoartist = !_download.coartist.isEmpty();
+
+    if (hasArtist && hasTitle)
+    {
+        filename += _download.artist;
+
+        if (hasCoartist)
+            filename += " ft. " + _download.coartist;
+
+        filename += " - " + _download.title;
+    } else {
+        filename = _download.videoTitle;
+    }
+
+    QString extension = "";
+    if (isVideoMode()) {
+        extension = _download.videoExtension;
+    } else {
+        extension = _download.convertExtension;
+    }
+
+    QString savePath = getOutputPath(filename, extension);
+    _download.savefile = savePath;
+
+
+    if (QFile::exists(savePath))
+    {
+        _status = Complete;
+        setDisplay(Complete, 0, 0, 100);
+        _download.statusItem->setText(tr("Already Downloaded"));
+    }
+    else
+    {
+        _status = Ready;
+        setDisplay(Ready, 0, 0, 0);
+    }
+
+    emit statusChanged();
 }
 
 
@@ -252,6 +296,12 @@ Processor::onDownloadFinished()
 
             if (_soundBytesReceived == 0)
             {
+                /* Maybe a redirect from YouTube. Try it.
+                 * If it fails then, something else happened. Try error control.
+                 */
+                if (redirect(_soundNetworkReply))
+                    return;
+
                 qDebug() << QString("Invalid sound data from %1")
                             .arg(_soundNetworkReply->url().toString());
                 goto ErrorProcedure;
@@ -261,6 +311,9 @@ Processor::onDownloadFinished()
             {
                 if (_videoBytesReceived == 0)
                 {
+                    if (redirect(_videoNetworkReply))
+                        return;
+
                     qDebug() << QString("Invalid video data from %1")
                                 .arg(_videoNetworkReply->url().toString());
                     goto ErrorProcedure;
@@ -269,7 +322,6 @@ Processor::onDownloadFinished()
 
 
             QString iargs = " -id3v2_version 3 -write_id3v1 1 ";
-            QString filename = "";
 
             bool hasArtist = !_download.artist.isEmpty();
             bool hasTitle = !_download.title.isEmpty();
@@ -277,43 +329,35 @@ Processor::onDownloadFinished()
 
             if (hasArtist && hasTitle)
             {
-                filename += _download.artist;
+                QString artist = _download.artist;
 
                 if (hasCoartist)
-                    filename += " ft. " + _download.coartist;
+                    artist += " ft. " + _download.coartist;
 
                 /* The filename so far contains the artist's name
                  * Write it using ID3 tags.
                  */
-                iargs += " -metadata artist=\""+filename+"\" ";
-
-                filename += " - " + _download.title;
+                iargs += " -metadata artist=\""+artist+"\" ";
                 iargs += " -metadata title=\""+_download.title+"\" ";
-            } else {
-                filename = _download.videoTitle;
             }
 
             QString command;
             if (isVideoMode())
             {
-                QString extension = _download.videoExtension;
-                QString savePath = getOutputPath(filename, extension);
                 QString vfilename = _videoFile->fileName();
                 QString sfilename = _soundFile->fileName();
                 _videoFile->close();
                 _soundFile->close();
                 QString args = "%1 -i \"%2\" -i \"%3\" -acodec copy -vcodec copy %4 \"%5\"";
                 command = QString(args)
-                          .arg(FFMPEG_PATH, vfilename, sfilename, iargs, savePath);
+                          .arg(FFMPEG_PATH, vfilename, sfilename, iargs, _download.savefile);
             }
             else
             {
-                QString extension = _download.convertExtension;
-                QString savePath = getOutputPath(filename, extension);
                 QString sfilename = _soundFile->fileName();
                 _soundFile->close();
                 command = QString("%1 -y -i \"%2\" %3 \"%4\"")
-                            .arg(FFMPEG_PATH, sfilename, iargs, savePath);
+                            .arg(FFMPEG_PATH, sfilename, iargs, _download.savefile);
             }
 
             _convertPid = Tasks->enqueue(command);
@@ -612,8 +656,11 @@ Processor::download()
 
         QNetworkRequest vrequest;
         vrequest.setUrl(QUrl(_download.videoUrl));
-        vrequest.setRawHeader("Accept-Charset", "utf-8");
-        vrequest.setRawHeader("charset", "utf-8");
+        srequest.setRawHeader("Accept", "*/*");
+        srequest.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
+        srequest.setRawHeader("Accept-Language", "en-US,en;q=0.8");
+        srequest.setRawHeader("Accept-Charset", "utf-8");
+        srequest.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36");
         _videoNetworkReply = Gateway->get(vrequest);
 
         connect (_videoNetworkReply,
@@ -647,6 +694,76 @@ Processor::download()
 
 
 
+bool
+Processor::redirect(QNetworkReply *reply)
+{
+    if (reply == _soundNetworkReply) {
+        _soundNetworkReply->deleteLater();
+    } else if (reply == _videoNetworkReply) {
+        _videoNetworkReply->deleteLater();
+    }
+
+    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
+    if(redirect.isValid() && reply->url() != redirect)
+    {
+        if(redirect.isRelative())
+            redirect = reply->url().resolved(redirect);
+
+        QNetworkRequest request;
+        request.setUrl(redirect);
+        request.setRawHeader("Accept", "*/*");
+        request.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
+        request.setRawHeader("Accept-Language", "en-US,en;q=0.8");
+        request.setRawHeader("Accept-Charset", "utf-8");
+        request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36");
+
+        if (reply == _soundNetworkReply)
+        {
+            disconnect(_soundNetworkReply);
+            _soundNetworkReply->deleteLater();
+            _soundNetworkReply = reply = Gateway->get(request);
+        }
+        else if (reply == _videoNetworkReply)
+        {
+            disconnect(_videoNetworkReply);
+            _videoNetworkReply->deleteLater();
+            _videoNetworkReply = reply = Gateway->get(request);
+        }
+
+        connect (reply,
+                 SIGNAL(downloadProgress(qint64,qint64)),
+                 this,
+                 SLOT(onDownloadProgressChanged(qint64, qint64)));
+
+        connect (reply,
+                 SIGNAL(readyRead()),
+                 this,
+                 SLOT(onDownloadReadyRead()));
+
+        connect (reply,
+                 SIGNAL(finished()),
+                 this,
+                 SLOT(onDownloadFinished()));
+
+        connect (reply,
+                 SIGNAL(sslErrors(QList<QSslError>)),
+                 this,
+                 SLOT(onDownloadSslErrors(QList<QSslError>)));
+
+
+        qDebug() << QString("Redirecting to %1").arg(redirect.toString());
+
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+
+
+
+
 QString
 Processor::getOutputPath(const QString &title, const QString &extension)
 {
@@ -655,17 +772,6 @@ Processor::getOutputPath(const QString &title, const QString &extension)
     QString returnFilename = _savePath;
     returnFilename += separator;
     returnFilename += QString("%1.%2").arg(cleanFilename, extension);
-
-    int index = 0;
-    while (QFile::exists(returnFilename))
-    {
-        index++;
-        returnFilename = _savePath;
-        returnFilename += separator;
-        returnFilename +=
-            QString("%1-%2.%3")
-                .arg(cleanFilename, QString::number(index), extension);
-    }
 
     return returnFilename;
 }

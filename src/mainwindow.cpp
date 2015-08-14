@@ -99,6 +99,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->installEventFilter(this);
 
+    //this->setGeometry(20,20,370,220);
+    //this->setGeometry(20,20,700,416);
+
+
 
 #if defined(WITH_UPDATE_CHECK)
     if (Settings->value("autocheck_updates", QVariant(true)) == true)
@@ -136,7 +140,7 @@ MainWindow::eventFilter (QObject *object, QEvent *event)
     {
         if (_downloading) {
             event->ignore();
-            QString msg = tr("You have one or more downloads in progress. You should stop them first.");
+            QString msg = tr("You have one or more downloads in progress. You should cancel them first.");
             QMessageBox::information(this, tr("Information"), msg);
             return true;
         }

@@ -65,7 +65,7 @@ Parser::parse(QString url)
     _url = url;
 
     QString ydlExecutable = "youtube-dl";
-    QString format = "%1 --no-warnings --prefer-insecure --no-check-certificate -i -J \"%2\"";
+    QString format = "%1 --no-warnings --no-cache-dir --prefer-insecure --no-check-certificate -i -J \"%2\"";
 
     _process.start(QString(format).arg(ydlExecutable, url));
 
@@ -88,10 +88,11 @@ Parser::onProcessFinished(int exitCode)
                 .arg(QString::number(exitCode));
 
 
-    /* youtube-dl may return a result different to 0 if it finds a non critical problem.
-     * A non critical problem is when a video is not available, deleted, blocked.
-     * Then youtube-dl ignores it but its output is valid for the rest of our code
-     * So any error checking will be performed from our code against the returned data
+    /* youtube-dl may return a result different to 0 if it finds a non critical
+     * problem. A non critical problem is when a video is not available,
+     * deleted, blocked. Then youtube-dl ignores it but its output is valid for
+     * the rest of our code. So any error checking will be performed from our
+     * code against the returned data.
      */
 
 
@@ -182,7 +183,7 @@ Parser::onProcessFinished(int exitCode)
             QString url = format.value("url").toString();
             QString extension = format.value("ext").toString();
 
-            if (format.value("fps").isNull()) {
+            if (format.value("acodec").toString() != "none") {
                 // Music track
                 download.soundExtension = extension;
                 download.soundUrl = url;
@@ -213,7 +214,7 @@ Parser::onProcessFinished(int exitCode)
                 QString ext = format.value("ext").toString();
 
                 // Music track
-                if (format.value("fps").isNull())
+                if (format.value("acodec").toString() != "none")
                 {
                     if (download.soundExtension != "m4a")
                     {

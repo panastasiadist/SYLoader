@@ -326,7 +326,7 @@ MainForm::onDeleteClicked()
                     QMessageBox::information(
                         this,
                         tr("Information"),
-                        tr("This download is in progress. Please stop it first.")
+                        tr("This download is in progress. Please cancel it first.")
                     );
                 }
                 return;
@@ -460,6 +460,8 @@ MainForm::onParserFinished(QList<Download> downloads)
         d.speedItem = list.at(3);
         d.etaItem = list.at(4);
 
+
+
         _downloadsModel.appendRow(list);
 
         if (count > 1)
@@ -508,8 +510,6 @@ MainForm::onParserFinished(QList<Download> downloads)
 
 
 
-
-
 void
 MainForm::applyCurrentMode()
 {
@@ -530,7 +530,9 @@ MainForm::applyCurrentMode()
 bool
 MainForm::isValidUrl(QString url)
 {
-    return url.contains("youtube.com/watch");
+    return
+        url.contains("youtube.com/watch") ||
+        url.contains("youtube.com/playlist?list=");
 }
 
 
@@ -724,6 +726,3 @@ MainForm::processDownloads()
         }
     }
 }
-
-
-

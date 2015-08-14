@@ -75,13 +75,6 @@ GatewayPool::get(QNetworkRequest request)
 
         if (connections < MAX_CONNECTIONS)
         {
-            /* Sometimes the downloaders finish with no data received.
-             * The video is actually available and accessible.
-             * I don't know why this happens but creating a new QNAM seems to
-             * minimize the appearance of the problem.
-             */
-            manager->clearAccessCache();
-
             item.connections++;
             reply = manager->get(request);
             break;
@@ -116,6 +109,7 @@ GatewayPool::get(QNetworkRequest request)
 void
 GatewayPool::onFinished(QNetworkReply *reply)
 {
+
     QNetworkAccessManager *manager =
             qobject_cast<QNetworkAccessManager*>(QObject::sender());
 
@@ -131,6 +125,7 @@ GatewayPool::onFinished(QNetworkReply *reply)
 
             if (item.connections == 0) {
                 itemToDelete = idx;
+                break;
             }
         }
     }

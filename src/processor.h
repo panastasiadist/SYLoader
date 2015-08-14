@@ -99,6 +99,7 @@ private:
     void setDisplay(Status status, qint64 eta, qint64 speed, qint64 progress);
 
     void download();
+    bool redirect(QNetworkReply *reply);
 
     bool isVideoMode();
     bool isVideoValid();

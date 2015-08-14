@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="el_GR">
+<TS version="2.1" language="el">
 <context>
     <name>AboutForm</name>
     <message>
@@ -14,6 +14,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="aboutform.ui" line="195"/>
+        <source>Brought to you by Panagiotis Anastasiadis. SYLoader is dedicated to a special girl so she downloads her favorite songs :) Enjoy!</source>
+        <translation type="unfinished">Φτιαγμένο από τον Παναγιώτη Αναστασιάδη. Ο SYLoader είναι αφιερωμένος σε ένα ιδιαίτερο κορίτσι ώστε να κατεβάζει τα αγαπημένα της τραγούδια. Διασκεδάστε!</translation>
+    </message>
+    <message>
         <location filename="aboutform.ui" line="178"/>
         <source>Licensed under the terms and conditions of the GNU GPL v2</source>
         <translation type="unfinished">Υπό τους όρους και προϋποθέσεις της GNU GPL v2 </translation>
@@ -24,9 +29,9 @@
         <translation type="unfinished">Ο εύκολος τρόπος για YouTube downloading.</translation>
     </message>
     <message>
-        <location filename="aboutform.ui" line="195"/>
-        <source>Brought to you by Panagiotis Anastasiadis. SYLoader is dedicated to a special girl so she downloads her favorite songs :) Enjoy!</source>
-        <translation type="unfinished">Φτιαγμένο από τον Παναγιώτη Αναστασιάδη. Ο SYLoader είναι αφιερωμένος σε ένα ιδιαίτερο κορίτσι ώστε να κατεβάζει τα αγαπημένα της τραγούδια. Διασκεδάστε!</translation>
+        <location filename="../aboutform.ui" line="260"/>
+        <source>This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)</source>
+        <translation type="unfinished">Το συγκεκριμένο προϊόν περιέχει λογισμικό που έχει αναπτυχθεί από το OpenSSL Project για χρήση στο OpenSSL Toolkit (http://www.openssl.org/)</translation>
     </message>
     <message>
         <location filename="aboutform.ui" line="257"/>
@@ -37,6 +42,11 @@
         <location filename="aboutform.ui" line="264"/>
         <source>Contact Developer</source>
         <translation type="unfinished">Επικοινωνία με τον προγραμματιστή</translation>
+    </message>
+    <message>
+        <location filename="../aboutform.ui" line="288"/>
+        <source>Contributors</source>
+        <translation type="unfinished">Συντελεστές</translation>
     </message>
     <message>
         <location filename="aboutform.ui" line="271"/>
@@ -119,8 +129,8 @@
         <translation type="unfinished">Η λήψη δεν έχει καν ξεκινήσει.</translation>
     </message>
     <message>
-        <location filename="mainform.cpp" line="451"/>
-        <source>This download is in progress. Please stop it first.</source>
+        <location filename="../mainform.cpp" line="329"/>
+        <source>This download is in progress. Please cancel it first.</source>
         <translation type="unfinished">Αυτή είναι μια λήψη σε εξέλιξη. Παρακαλώ σταματήστε την πρώτα.</translation>
     </message>
     <message>
@@ -185,8 +195,8 @@
         <translation type="unfinished">Κατεβάστε κάνοντας αντιγραφή YouTube links στον browser!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="88"/>
-        <source>You have one or more downloads in progress. You should stop them first.</source>
+        <location filename="../mainwindow.cpp" line="143"/>
+        <source>You have one or more downloads in progress. You should cancel them first.</source>
         <translation type="unfinished">Μια ή περισσότερες λήψεις είναι σε εξέλιξη. Θα πρέπει να τις σταματήσετε πρώτα.</translation>
     </message>
     <message>
@@ -218,14 +228,14 @@
         <translation type="unfinished">Σφάλμα A/S</translation>
     </message>
     <message>
+        <location filename="../processor.cpp" line="213"/>
+        <source>Already Downloaded</source>
+        <translation type="unfinished">Έχει ήδη ληφθεί</translation>
+    </message>
+    <message>
         <location filename="../processor.cpp" line="701"/>
         <source>Queued</source>
         <translation type="unfinished">Αναμονή</translation>
-    </message>
-    <message>
-        <location filename="processor.cpp" line="418"/>
-        <source>Ready</source>
-        <translation type="unfinished">Έτοιμο</translation>
     </message>
     <message>
         <location filename="processor.cpp" line="421"/>
@@ -262,6 +272,11 @@
         <location filename="processor.cpp" line="463"/>
         <source>N/A</source>
         <translation type="unfinished">Μ/Δ</translation>
+    </message>
+    <message>
+        <location filename="processor.cpp" line="418"/>
+        <source>Ready</source>
+        <translation type="unfinished">Έτοιμο</translation>
     </message>
 </context>
 <context>

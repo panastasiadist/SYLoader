@@ -74,6 +74,7 @@ private:
     void applyCurrentMode();
     void processDownloads();
 
+
 private slots:
     void onParserFinished(QList<Download> downloads);
     void onProcessorStatusChanged();

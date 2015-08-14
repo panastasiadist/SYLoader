@@ -42,12 +42,12 @@
 #define SOFTWARE_VERSION_MINOR 0
 #define SOFTWARE_VERSION_PATCH 0
 
-#define UPDATE_CHECK_URL "http://panastas91.github.io/SYLoader/lversion.html"
-#define HOMEPAGE_URL "http://panastas91.github.io/SYLoader"
-#define DOWNLOADS_URL "http://panastas91.github.io/SYLoader"
+#define UPDATE_CHECK_URL "http://panastasiadist.github.io/SYLoader/lversion.html"
+#define HOMEPAGE_URL "http://panastasiadist.github.io/SYLoader"
+#define DOWNLOADS_URL "http://panastasiadist.github.io/SYLoader"
 #define CONTACT_URL "https://twitter.com/panastasiadist"
-#define FACEBOOK_URL "https://www.facebook.com/groups/512464022107865"
-#define TWITTER_URL "https://twitter.com/hashtag/syloader"
+#define FACEBOOK_URL "https://www.facebook.com/pages/SYLoader/1684668085090102"
+#define TWITTER_URL "https://twitter.com/hashtag/SYLoader"
 
 
 #if defined(_WIN32)
