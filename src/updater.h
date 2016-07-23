@@ -43,7 +43,7 @@ private:
     Updater();
 
 public:
-    static bool checkForUpdates(bool &update);
+    static bool checkForUpdates(bool &hasUpdate);
 
 signals:
 
