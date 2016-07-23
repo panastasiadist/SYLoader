@@ -24,7 +24,7 @@ SOURCES += main.cpp\
     settingsform.cpp \
     messenger.cpp \
     scheduler.cpp \
-    gatewaypool.cpp
+    networkgateway.cpp
 
 HEADERS  += mainwindow.h \
     download.h \
@@ -40,7 +40,7 @@ HEADERS  += mainwindow.h \
     settingsform.h \
     messenger.h \
     scheduler.h \
-    gatewaypool.h
+    networkgateway.h
 
 FORMS    += mainwindow.ui \
     mainform.ui \

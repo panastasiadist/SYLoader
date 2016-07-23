@@ -135,10 +135,11 @@ MainWindow::MainWindow(QWidget *parent) :
 bool
 MainWindow::eventFilter (QObject *object, QEvent *event)
 {
-    // We won't allow the program to close if downloading is in progress
+    // Prevent the program from closing if downloading is in progress.
     if (event->type() == QEvent::Close && object == this)
     {
-        if (_downloading) {
+        if (_downloading)
+        {
             event->ignore();
             QString msg = tr("You have one or more downloads in progress. You should cancel them first.");
             QMessageBox::information(this, tr("Information"), msg);
@@ -176,16 +177,21 @@ MainWindow::~MainWindow()
 void
 MainWindow::onMessageBusReceive(QString msg)
 {
-    if (msg == "parsing_started") {
+    if (msg == "parsing_started")
+    {
         ui->statusBar->showMessage(tr("Preparing your new downloads..."));
     }
     else if (msg == "parsing_finished")
     {
         ui->statusBar->showMessage(
             tr("Download by copying YouTube URLs in your browser!"));
-    } else if (msg == "downloading_started") {
+    }
+    else if (msg == "downloading_started")
+    {
         _downloading = true;
-    } else if (msg == "downloading_finished") {
+    }
+    else if (msg == "downloading_finished")
+    {
         _downloading = false;
     }
 }

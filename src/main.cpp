@@ -47,7 +47,7 @@
 QSettings *Settings;
 Scheduler *Tasks;
 Messenger *MessageBus;
-GatewayPool *Gateway;
+NetworkGateway *Gateway;
 
 
 int
@@ -61,7 +61,7 @@ main(int argc, char *argv[])
 
     Settings = new QSettings();
     MessageBus = new Messenger();
-    Gateway = new GatewayPool();
+    Gateway = new NetworkGateway();
     Tasks = new Scheduler();
     Tasks->setConcurrentTasks(1);
 

@@ -30,8 +30,8 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#ifndef GATEWAYPOOL_H
-#define GATEWAYPOOL_H
+#ifndef NETWORKGATEWAY_H
+#define NETWORKGATEWAY_H
 
 #include <QObject>
 #include <QMap>
@@ -39,24 +39,24 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
-struct GatewayPoolItem
+struct NetworkGatewayManager
 {
     QNetworkAccessManager *manager;
     int connections;
 };
 
 
-class GatewayPool : public QObject
+class NetworkGateway : public QObject
 {
     Q_OBJECT
 
 private:
-    QList<GatewayPoolItem> _managers;
+    QList<NetworkGatewayManager> _managers;
 
 
 public:
-    GatewayPool();
-    ~GatewayPool();
+    NetworkGateway();
+    ~NetworkGateway();
     QNetworkReply *get(QNetworkRequest request);
 
 
@@ -66,4 +66,4 @@ public slots:
     void onFinished(QNetworkReply *reply);
 };
 
-#endif // GATEWAYPOOL_H
+#endif // NETWORKGATEWAY_H

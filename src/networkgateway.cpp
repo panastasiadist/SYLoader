@@ -30,29 +30,25 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#include "gatewaypool.h"
+#include "networkgateway.h"
 
-/* Per QT docs, QNetworkAccessManager processes up to 6 connections at the same
- * time on the desktop platforms. The rest are enqueued;
- */
+
+// The maximum number of requests a manager will concurrently handle before
+// a new manager needs to be created for another set of connections.
+// Per QT docs, QNetworkAccessManager processes up to 6 connections at the same
+// time on the desktop platforms. The rest are enqueued.
 #define MAX_CONNECTIONS 6
 
 
 
+NetworkGateway::NetworkGateway() {}
 
 
-GatewayPool::GatewayPool()
+
+NetworkGateway::~NetworkGateway()
 {
-
-}
-
-
-
-
-
-GatewayPool::~GatewayPool()
-{
-    foreach(GatewayPoolItem item, _managers) {
+    // Cleanup
+    foreach(NetworkGatewayManager item, _managers) {
         item.manager->deleteLater();
     }
 
@@ -61,16 +57,20 @@ GatewayPool::~GatewayPool()
 
 
 
-
-
 QNetworkReply*
-GatewayPool::get(QNetworkRequest request)
+NetworkGateway::get(QNetworkRequest request)
 {
-    QNetworkReply *reply = NULL;
+    QNetworkReply*          reply;
+    QNetworkAccessManager*  manager;
 
-    foreach(GatewayPoolItem item, _managers)
+    reply = NULL;
+
+    // First search in current managers to find one which hasn't reached
+    // MAX_CONNECTIONS of open connections. If one is found, use it for the
+    // new request and increase its connection count by one.
+    foreach(NetworkGatewayManager item, _managers)
     {
-        QNetworkAccessManager *manager = item.manager;
+        manager = item.manager;
         int connections = item.connections;
 
         if (connections < MAX_CONNECTIONS)
@@ -81,22 +81,31 @@ GatewayPool::get(QNetworkRequest request)
         }
     }
 
+    // If reply is NULL then either there is no manager created yet to handle
+    // the request or all current managers already have MAX_CONNECTIONS
+    // connections open. So we need to create and store a new manager for this
+    // new request.
     if (reply == NULL)
     {
-        QNetworkAccessManager *manager = new QNetworkAccessManager();
+        // Create and store a new manager which will handle the current request
+        // and another MAX_CONNECTIONS - 1 (current request) connections.
+        manager = new QNetworkAccessManager();
 
+        NetworkGatewayManager item;
+        item.manager = manager;
+        item.connections = 1;
+
+        _managers.append(item);
+
+        // Signaled each time a request handled by the manager has finished.
+        // Useful for bookkeeping purposes and cleanup.
         connect(manager,
                 SIGNAL(finished(QNetworkReply*)),
                 this,
                 SLOT(onFinished(QNetworkReply*)));
 
+        // Finally make the request and assign the handle to it.
         reply = manager->get(request);
-
-        GatewayPoolItem item;
-        item.manager = manager;
-        item.connections = 1;
-
-        _managers.append(item);
     }
 
     return reply;
@@ -104,21 +113,23 @@ GatewayPool::get(QNetworkRequest request)
 
 
 
-
-
 void
-GatewayPool::onFinished(QNetworkReply *reply)
+NetworkGateway::onFinished(QNetworkReply *reply)
 {
+    QNetworkAccessManager* manager;
+    int itemToDelete, count;
 
-    QNetworkAccessManager *manager =
-            qobject_cast<QNetworkAccessManager*>(QObject::sender());
+    itemToDelete = -1;
+    count = _managers.count();
+    manager = qobject_cast<QNetworkAccessManager*>(QObject::sender());
 
-    int itemToDelete = -1;
-    int count = _managers.count();
-
+    // A request made through a QNAM has finished.
+    // Find the manager attached to the specific QNAME and decrease its current
+    // connections possibly marking it for removal (if no active connections).
     for (int idx = 0; idx < count; idx++)
     {
-        GatewayPoolItem item = _managers.at(idx);
+        NetworkGatewayManager item = _managers.at(idx);
+
         if (item.manager == manager)
         {
             item.connections--;
@@ -130,8 +141,9 @@ GatewayPool::onFinished(QNetworkReply *reply)
         }
     }
 
-    // Don't delete the last one QNAM. Most probably it will be needed again.
-    if (itemToDelete != -1 && count > 1)
+    // If the manager has no active connections, it has been marked for removal.
+    // Clean it as it no longer needed.
+    if (itemToDelete != -1)
     {
         _managers.at(itemToDelete).manager->deleteLater();
         _managers.removeAt(itemToDelete);

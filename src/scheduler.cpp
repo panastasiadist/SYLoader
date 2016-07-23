@@ -60,8 +60,6 @@ Scheduler::enqueue(QString command)
 
 
 
-
-
 void
 Scheduler::abort(int pid)
 {
@@ -83,8 +81,6 @@ Scheduler::abort(int pid)
 
 
 
-
-
 bool
 Scheduler::running(int pid)
 {
@@ -98,15 +94,11 @@ Scheduler::running(int pid)
 
 
 
-
-
 void
 Scheduler::setConcurrentTasks(int num)
 {
     _num = num;
 }
-
-
 
 
 
