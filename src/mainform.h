@@ -62,13 +62,10 @@ private:
     ProgressItemDelegate _progressItemDelegate;
     QStandardItemModel _downloadsModel;
     QList<Processor*> _processors;
-    QList<Parser*> _parsers;
     QList<QString> _registeredUrls;
 
 
     ProcessorStats getProcessorStats();
-    QString canonicalizeUrl(QString url);
-    bool isValidUrl(QString url);
     void registerAndParseUrl(QString url);
     void doDownloadsFinished();
     void applyCurrentMode();

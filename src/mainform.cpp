@@ -83,6 +83,10 @@ MainForm::MainForm(QWidget *parent) :
             this,
             SLOT(onClipboardChanged(QClipboard::Mode)));
 
+    connect(&_parser,
+            SIGNAL(parsed(QList<Download>)),
+            this,
+            SLOT(onParserFinished(QList<Download>)));
 
 
     _downloadsModel.setHorizontalHeaderItem(0, new QStandardItem(tr("Title")));
@@ -154,9 +158,10 @@ MainForm::onClipboardChanged(QClipboard::Mode mode)
     if (mode == QClipboard::Clipboard)
     {
         QString url = QApplication::clipboard()->text();
-        if (isValidUrl(url))
+
+        if (_parser.isSupported(url))
         {
-            QString c = canonicalizeUrl(url);
+            QString c = _parser.canonicalizeUrl(url);
             if (_registeredUrls.contains(c) == false) {
                 registerAndParseUrl(c);
             }
@@ -347,6 +352,7 @@ void
 MainForm::onClearClicked()
 {
     bool downloading = false;
+
     foreach (Processor *processor, _processors)
     {
         Processor::Status status = processor->getStatus();
@@ -429,11 +435,6 @@ MainForm::onParserFinished(QList<Download> downloads)
 {
     int count = downloads.length();
     QString path = Settings->value("download_path").toString();
-    Parser *parser = qobject_cast<Parser*>(QObject::sender());
-
-
-    parser->deleteLater();
-
 
     foreach (Download d, downloads)
     {
@@ -471,7 +472,7 @@ MainForm::onParserFinished(QList<Download> downloads)
              * We should register the canonicalized version each video's url
              * so the user can't reenter it for downloading.
              */
-            _registeredUrls.append(canonicalizeUrl(d.normalUrl));
+            _registeredUrls.append(_parser.canonicalizeUrl(d.normalUrl));
         }
 
 
@@ -497,12 +498,9 @@ MainForm::onParserFinished(QList<Download> downloads)
         processDownloads();
 
 
-    /* Each finished parser should be removed from the list of the currently
-     * active parsers and if there aren't parsers working at the moment, then
-     * we should update UI accordingly.
-     */
-    _parsers.removeOne(parser);
-    if (_parsers.count() == 0) {
+    /* If there aren't parsers working at the moment, then we should update UI
+     * accordingly. */
+    if (!_parser.parsing()) {
         MessageBus->send("parsing_finished");
     }
 
@@ -521,18 +519,6 @@ MainForm::applyCurrentMode()
     foreach (Processor *processor, _processors) {
         processor->getDownload()->convertExtension = ext;
     }
-}
-
-
-
-
-
-bool
-MainForm::isValidUrl(QString url)
-{
-    return
-        url.contains("youtube.com/watch") ||
-        url.contains("youtube.com/playlist?list=");
 }
 
 
@@ -575,60 +561,15 @@ MainForm::doDownloadsFinished()
 
 
 
-
-
-QString
-MainForm::canonicalizeUrl(QString url)
-{
-    if (url.startsWith("https://"))
-        url = url.replace("https://", "http://");
-
-    QStringList urlParts = url.split("?");
-    QString urlBasicPart = urlParts.at(0);
-    QString urlQueryPart = urlParts.at(1);
-    QStringList urlQueryItems = urlQueryPart.split("&");
-    QString videoQueryItem = "";
-    QString listQueryItem = "";
-
-    foreach (QString i, urlQueryItems)
-    {
-        QStringList t = i.split("=");
-        QString verb = t.at(0);
-        if (verb == "v")
-            videoQueryItem = i;
-        else if (verb == "list")
-            listQueryItem = i;
-    }
-
-    return
-        urlBasicPart +
-        "?" +
-        videoQueryItem +
-        (listQueryItem.isEmpty() ? "" : "&" + listQueryItem);
-}
-
-
-
-
-
 void
 MainForm::registerAndParseUrl(QString url)
 {
     MessageBus->send("parsing_started");
 
-    Parser *parser = new Parser();
-    connect(parser,
-            SIGNAL(finished(QList<Download>)),
-            this,
-            SLOT(onParserFinished(QList<Download>)));
-
-    _parsers.append(parser);
     _registeredUrls.append(url);
 
-    parser->parse(url);
+    _parser.parse(url);
 }
-
-
 
 
 

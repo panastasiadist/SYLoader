@@ -34,6 +34,7 @@
 #define PARSER_H
 
 #include "download.h"
+#include "extractors/youtube/youtubeextractor.h"
 #include <QObject>
 #include <QProcess>
 #include <QString>
@@ -46,17 +47,23 @@ class Parser : public QObject
 public:
     Parser();
     void parse(QString url);
+    bool parsing();
+    bool isPlaylist(QString url);
+    bool isSupported(QString url);
+    QString canonicalizeUrl(QString url);
+
 
 private:
-    QProcess _process;
     QString _url;
-    int _retryCount;
+    Extractor* getExtractor(QString url);
+    QList<Extractor*> _extractors;
+
 
 signals:
-    void finished(QList<Download> downloads);
+    void parsed(QList<Download> downloads);
 
 public slots:
-    void onProcessFinished(int exitCode);
+    void onExtractorFinished(int result, QList<Download> downloads);
 };
 
 #endif // PARSER_H

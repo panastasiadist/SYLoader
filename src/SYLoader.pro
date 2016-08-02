@@ -24,7 +24,8 @@ SOURCES += main.cpp\
     settingsform.cpp \
     messenger.cpp \
     scheduler.cpp \
-    networkgateway.cpp
+    networkgateway.cpp \
+    extractors/youtube/youtubeextractor.cpp
 
 HEADERS  += mainwindow.h \
     download.h \
@@ -40,7 +41,9 @@ HEADERS  += mainwindow.h \
     settingsform.h \
     messenger.h \
     scheduler.h \
-    networkgateway.h
+    networkgateway.h \
+    extractors/youtube/youtubeextractor.h \
+    extractor.h
 
 FORMS    += mainwindow.ui \
     mainform.ui \
