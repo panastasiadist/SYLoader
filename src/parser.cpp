@@ -31,6 +31,7 @@
  ******************************************************************************/
 
 #include "parser.h"
+#include "helper.h"
 #include <QList>
 #include <QDebug>
 
@@ -142,7 +143,13 @@ Parser::onExtractorFinished(int result, QList<Download> downloads)
     extractor->deleteLater();
     _extractors.removeOne(extractor);
 
-    emit parsed(downloads);
+    QList<Download> temp;
+
+    foreach(Download d, downloads) {
+        temp.append(Helper::decorateDownload(d));
+    }
+
+    emit parsed(temp);
 
     return;
 }
