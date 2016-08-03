@@ -30,6 +30,7 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
+
 #include "processor.h"
 #include "global.h"
 #include "utility.h"
@@ -42,8 +43,10 @@
 #include <QDebug>
 
 
+
 #define MAX_RETRIES 3
 #define RETRY_INTERVAL 10000
+
 
 
 Processor::Processor(Download d, QString savePath)
@@ -60,11 +63,9 @@ Processor::Processor(Download d, QString savePath)
     reset();
 
     connect(Tasks,
-            SIGNAL(statusChanged(Scheduler::Status,int,int)),
+            SIGNAL(statusChanged(Scheduler::Status, int, int)),
             this,
-            SLOT(onStatusChanged(Scheduler::Status,int,int)));
-
-
+            SLOT(onStatusChanged(Scheduler::Status, int, int)));
 
     if (isVideoValid())
     {
@@ -80,14 +81,10 @@ Processor::Processor(Download d, QString savePath)
 
 
 
-
-
 Processor::~Processor()
 {
     Tasks->disconnect(this);
 }
-
-
 
 
 
@@ -108,43 +105,43 @@ Processor::start()
 
 
 
-
-
 void
 Processor::stop()
 {
-    /* The video's information is not valid.
-     * This processor never started.
-     */
+    // The video's information is not valid. This processor never started.
     if (!isVideoValid()) {
         return;
     }
 
 
     // Check if a cancelation has been already issued.
-    if (_cancelationPending)
+    if (_cancelationPending) {
         return;
+    }
 
+    // The rest of the code should know that cancelation has been issued.
     _cancelationPending = true;
 
 
     if (_status == Downloading)
     {
         // Call the downloading managers to abort downloading.
-        _soundNetworkReply->abort();
+        if (_soundNetworkReply != NULL) {
+            _soundNetworkReply->abort();
+        }
 
         // The video download manager has been activated to download the video
-        if (isVideoMode())
+        if (_videoNetworkReply != NULL) {
             _videoNetworkReply->abort();
+        }
 
         _status = Canceled;
     }
     else if (_status == Converting)
     {
-        /* Call the converting process to terminate.
-         * Because we have set cancelation pending, the termination process
-         * will not raise an IO Error.
-         */
+        // Call the converting process to terminate.
+        // Because we have set cancelation pending, the termination process will
+        // not raise an IO Error.
         Tasks->abort(_convertPid);
 
         _status = Canceled;
@@ -162,11 +159,12 @@ Processor::stop()
 
 
 
-
-
 void
 Processor::reset()
 {
+    QString filename = "";
+
+
     _videoBytes = 0;
     _soundBytes = 0;
     _bytesTotal = 0;
@@ -177,11 +175,10 @@ Processor::reset()
     _cancelationPending = false;
 
 
-    QString filename = "";
-
     bool hasArtist = !_download.artist.isEmpty();
     bool hasTitle = !_download.title.isEmpty();
     bool hasCoartist = !_download.coartist.isEmpty();
+
 
     if (hasArtist && hasTitle)
     {
@@ -191,9 +188,12 @@ Processor::reset()
             filename += " ft. " + _download.coartist;
 
         filename += " - " + _download.title;
-    } else {
+    }
+    else
+    {
         filename = _download.videoTitle;
     }
+
 
     QString extension = "";
     if (isVideoMode()) {
@@ -202,6 +202,7 @@ Processor::reset()
         extension = _download.convertExtension;
     }
 
+
     QString savePath = getOutputPath(filename, extension);
     _download.savefile = savePath;
 
@@ -209,8 +210,8 @@ Processor::reset()
     if (QFile::exists(savePath))
     {
         _status = Complete;
-        setDisplay(Complete, 0, 0, 100);
         _download.statusItem->setText(tr("Already Downloaded"));
+        setDisplay(Complete, 0, 0, 100);
     }
     else
     {
@@ -223,15 +224,11 @@ Processor::reset()
 
 
 
-
-
 Download*
 Processor::getDownload()
 {
     return &_download;
 }
-
-
 
 
 
@@ -243,39 +240,54 @@ Processor::getStatus()
 
 
 
-
-
 void
 Processor::onDownloadFinished()
 {
-    bool finished = false;
     QNetworkReply::NetworkError videoError;
-    QNetworkReply::NetworkError soundError = _soundNetworkReply->error();
+    QNetworkReply::NetworkError soundError;
+    bool finished = false;
 
 
-    if (isVideoMode())
+    if (_videoNetworkReply != NULL) {
         videoError = _videoNetworkReply->error();
-    else
+    } else {
         videoError = QNetworkReply::NoError;
+    }
 
 
-    if (isVideoMode())
+    if (_soundNetworkReply != NULL) {
+        soundError = _soundNetworkReply->error();
+    } else {
+        soundError = QNetworkReply::NoError;
+    }
+
+
+    if (_videoNetworkReply != NULL && _soundNetworkReply != NULL)
     {
         bool videoFinished = _videoNetworkReply->isFinished();
         bool soundFinished = _soundNetworkReply->isFinished();
 
         finished = videoFinished && soundFinished;
-    } else {
+    }
+    else if (_videoNetworkReply != NULL)
+    {
+        finished = _videoNetworkReply->isFinished();
+    }
+    else
+    {
         finished = _soundNetworkReply->isFinished();
     }
 
 
     if (finished)
     {
-        if (soundError == QNetworkReply::OperationCanceledError && !isVideoMode())
+        if (soundError == QNetworkReply::OperationCanceledError &&
+            _videoNetworkReply == NULL)
+        {
             videoError = QNetworkReply::OperationCanceledError;
+        }
 
-        if (videoError == QNetworkReply::OperationCanceledError &&
+        if (videoError == QNetworkReply::OperationCanceledError ||
             soundError == QNetworkReply::OperationCanceledError)
         {
             // User has canceled downloading
@@ -288,36 +300,34 @@ Processor::onDownloadFinished()
         }
         else
         {
-            /* It happens that the downloaders finish without an error but with
-             * no data downloaded. I've noticed that the video is still
-             * available for download. Don't know why this happens.
-             * Just check for this behavior and take action.
-             */
-
-            if (_soundBytesReceived == 0)
+            // It's possible that the downloaders finish without an error but
+            // with no data downloaded. I've noticed that the video is still
+            // available for download. Don't know why this happens.
+            // Just check for this behavior and take action.
+            if (_soundNetworkReply != NULL && _soundBytesReceived == 0)
             {
-                /* Maybe a redirect from YouTube. Try it.
-                 * If it fails then, something else happened. Try error control.
-                 */
-                if (redirect(_soundNetworkReply))
+                // Maybe a redirect from YouTube. Try it.
+                // If it fails then, something else happened. Try error control.
+                if (redirect(_soundNetworkReply)) {
                     return;
+                }
 
                 qDebug() << QString("Invalid sound data from %1")
                             .arg(_soundNetworkReply->url().toString());
+
                 goto ErrorProcedure;
             }
 
-            if (isVideoMode())
+            if (_videoNetworkReply != NULL && _videoBytesReceived == 0)
             {
-                if (_videoBytesReceived == 0)
-                {
-                    if (redirect(_videoNetworkReply))
-                        return;
-
-                    qDebug() << QString("Invalid video data from %1")
-                                .arg(_videoNetworkReply->url().toString());
-                    goto ErrorProcedure;
+                if (redirect(_videoNetworkReply)) {
+                    return;
                 }
+
+                qDebug() << QString("Invalid video data from %1")
+                            .arg(_videoNetworkReply->url().toString());
+
+                goto ErrorProcedure;
             }
 
 
@@ -331,51 +341,79 @@ Processor::onDownloadFinished()
             {
                 QString artist = _download.artist;
 
-                if (hasCoartist)
+                if (hasCoartist) {
                     artist += " ft. " + _download.coartist;
+                }
 
-                /* The filename so far contains the artist's name
-                 * Write it using ID3 tags.
-                 */
+                // The filename so far contains the artist's name
+                // Write it using ID3 tags.
                 iargs += " -metadata artist=\""+artist+"\" ";
                 iargs += " -metadata title=\""+_download.title+"\" ";
             }
 
             QString command;
-            if (isVideoMode())
+
+            if (_videoNetworkReply != NULL && _soundNetworkReply != NULL)
             {
-                QString vfilename = _videoFile->fileName();
-                QString sfilename = _soundFile->fileName();
+                QString vfilename = _videoFile->fileName(),
+                        sfilename = _soundFile->fileName(),
+                        args = "%1 -i \"%2\" -i \"%3\" -acodec copy -vcodec copy %4 \"%5\"";
+
+                command = QString(args)
+                          .arg(FFMPEG_PATH,
+                               vfilename,
+                               sfilename,
+                               iargs,
+                               _download.savefile);
+
                 _videoFile->close();
                 _soundFile->close();
-                QString args = "%1 -i \"%2\" -i \"%3\" -acodec copy -vcodec copy %4 \"%5\"";
-                command = QString(args)
-                          .arg(FFMPEG_PATH, vfilename, sfilename, iargs, _download.savefile);
             }
-            else
+            else if (_videoNetworkReply != NULL && _soundNetworkReply == NULL)
+            {
+                QString vfilename = _videoFile->fileName();
+
+                if (_download.convertExtension.isEmpty() == false)
+                {
+                    QString args = "%1 -i \"%2\" -acodec copy %3 \"%4\"";
+                    command = QString(args)
+                              .arg(FFMPEG_PATH,
+                                   vfilename,
+                                   iargs,
+                                   _download.savefile);
+                }
+            }
+
+            if (command.length() == 0)
             {
                 QString sfilename = _soundFile->fileName();
-                _soundFile->close();
+
                 command = QString("%1 -y -i \"%2\" %3 \"%4\"")
-                            .arg(FFMPEG_PATH, sfilename, iargs, _download.savefile);
+                            .arg(FFMPEG_PATH,
+                                 sfilename,
+                                 iargs,
+                                 _download.savefile);
+
+                _soundFile->close();
             }
 
-            _convertPid = Tasks->enqueue(command);
 
+            _convertPid = Tasks->enqueue(command);
             _status = Converting;
+
             setDisplay(Converting, 0, 0, 100);
+
             emit statusChanged();
             goto Cleanup;
         }
     }
     else
     {
-        /* One of the two downloaders (video/sound) has finished.
-         * This may be normal. A common scenario is that sound has been
-         * downloaded because of smaller size but video is still pending.
-         * But maybe a downloader has finished because of error.
-         * Check and take action accordingly.
-         */
+        // One of the two downloaders (video/sound) has finished.
+        // This may be normal. A common scenario is that sound has been
+        // downloaded because of smaller size but video is still pending.
+        // But maybe a downloader has finished because of an error.
+        // Check and take action accordingly.
         if (videoError || soundError) {
             goto ErrorProcedure;
         }
@@ -386,12 +424,11 @@ Processor::onDownloadFinished()
 
 ErrorProcedure:
 
-
     // If at least one downloader has errored, stop the other.
-    if (videoError)
+    if (videoError && _soundNetworkReply != NULL)
         _soundNetworkReply->abort();
 
-    if (soundError && isVideoMode())
+    if (soundError && _videoNetworkReply != NULL)
         _videoNetworkReply->abort();
 
 
@@ -404,8 +441,10 @@ ErrorProcedure:
                          QString::number(RETRY_INTERVAL));
 
         QTimer *timer = new QTimer();
+
         timer->setSingleShot(true);
         timer->start(RETRY_INTERVAL);
+
         connect(timer,
                 SIGNAL(timeout()),
                 this,
@@ -419,34 +458,41 @@ ErrorProcedure:
                     .arg(MAX_RETRIES);
 
         _status = ErrorConnection;
+
         setDisplay(ErrorConnection, 0, 0, 0);
+
         emit statusChanged();
+
         goto Cleanup;
     }
 
 
-
-
-
 Cleanup:
-    _soundNetworkReply->deleteLater();
-    _soundNetworkReply = NULL;
+    if (_soundNetworkReply != NULL)
+    {
+        _soundNetworkReply->deleteLater();
+        _soundNetworkReply = NULL;
 
-    if (_soundFile->isOpen())
-        _soundFile->close();
+        if (_soundFile->isOpen()) {
+            _soundFile->close();
+        }
 
-    delete _soundFile;
-    _soundFile = NULL;
+        delete _soundFile;
 
+        _soundFile = NULL;
+    }
 
-    if (isVideoMode()) {
+    if (_videoNetworkReply != NULL)
+    {
         _videoNetworkReply->deleteLater();
         _videoNetworkReply = NULL;
 
-        if (_videoFile->isOpen())
+        if (_videoFile->isOpen()) {
             _videoFile->close();
+        }
 
         delete _videoFile;
+
         _videoFile = NULL;
     }
 
@@ -454,19 +500,17 @@ Cleanup:
 
 
 
-
-
-
 void
 Processor::onStatusChanged(Scheduler::Status status, int pid, int exitCode)
 {
-    if (pid != _convertPid)
+    if (pid != _convertPid) {
         return;
-
+    }
 
     if (status == Scheduler::Started)
     {
         _status = Converting;
+
         setDisplay(Converting, 0, 0, 100);
 
         qDebug() << "Converter started";
@@ -489,10 +533,9 @@ Processor::onStatusChanged(Scheduler::Status status, int pid, int exitCode)
     }
 
     setDisplay(_status, 0, 0, 100);
+
     emit statusChanged();
 }
-
-
 
 
 
@@ -502,8 +545,10 @@ Processor::onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal)
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(QObject::sender());
 
     // May be 0, on a connection error or glitch;
-    if (bytesTotal == 0)
+    if (bytesTotal == 0) {
         return;
+    }
+
 
     if (reply == _videoNetworkReply)
     {
@@ -515,7 +560,6 @@ Processor::onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal)
 
         _videoBytesReceived = bytesReceived;
     }
-
 
     if (reply == _soundNetworkReply)
     {
@@ -550,15 +594,16 @@ Processor::onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal)
 
 
 
-
-
 void
 Processor::onDownloadReadyRead()
 {
-    QByteArray soundData = _soundNetworkReply->readAll();
-    _soundFile->write(soundData);
+    if (_soundNetworkReply != NULL)
+    {
+        QByteArray soundData = _soundNetworkReply->readAll();
+        _soundFile->write(soundData);
+    }
 
-    if (isVideoMode())
+    if (_videoNetworkReply != NULL)
     {
         QByteArray videoData = _videoNetworkReply->readAll();
         _videoFile->write(videoData);
@@ -567,17 +612,15 @@ Processor::onDownloadReadyRead()
 
 
 
-
 void
 Processor::onDownloadSslErrors(const QList<QSslError> errors)
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(QObject::sender());
+
     reply->ignoreSslErrors();
 
-    qDebug() << QString("SSL error on %1")
-                .arg(reply->url().toString());
+    qDebug() << QString("SSL error on %1").arg(reply->url().toString());
 }
-
 
 
 
@@ -587,7 +630,6 @@ Processor::onTimerTimeout()
     QTimer *timer = qobject_cast<QTimer*>(QObject::sender());
     timer->disconnect();
     timer->deleteLater();
-
 
     // Maybe a cancellation has been issued before the timeout.
     if (_cancelationPending) {
@@ -602,53 +644,51 @@ Processor::onTimerTimeout()
 
 
 
-
-
 void
 Processor::download()
 {
     _speedElapsedTimer.start();
 
-    _soundFile = new QTemporaryFile();
-    _soundFile->setAutoRemove(false);
-    _soundFile->open();
+
+    if (_download.soundUrl.length() > 0)
+    {
+        _soundFile = new QTemporaryFile();
+        _soundFile->setAutoRemove(false);
+        _soundFile->open();
+
+        QNetworkRequest srequest;
+        srequest.setUrl(QUrl(_download.soundUrl));
+        srequest.setRawHeader("Accept", "*/*");
+        srequest.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
+        srequest.setRawHeader("Accept-Language", "en-US,en;q=0.8");
+        srequest.setRawHeader("Accept-Charset", "utf-8");
+        srequest.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36");
+        _soundNetworkReply = Gateway->get(srequest);
+
+        connect (_soundNetworkReply,
+                 SIGNAL(downloadProgress(qint64,qint64)),
+                 this,
+                 SLOT(onDownloadProgressChanged(qint64, qint64)));
+
+        connect (_soundNetworkReply,
+                 SIGNAL(readyRead()),
+                 this,
+                 SLOT(onDownloadReadyRead()));
+
+        connect (_soundNetworkReply,
+                 SIGNAL(finished()),
+                 this,
+                 SLOT(onDownloadFinished()));
+
+        connect (_soundNetworkReply,
+                 SIGNAL(sslErrors(QList<QSslError>)),
+                 this,
+                 SLOT(onDownloadSslErrors(QList<QSslError>)));
+    }
 
 
-
-    QNetworkRequest srequest;
-    srequest.setUrl(QUrl(_download.soundUrl));
-    srequest.setRawHeader("Accept", "*/*");
-    srequest.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
-    srequest.setRawHeader("Accept-Language", "en-US,en;q=0.8");
-    srequest.setRawHeader("Accept-Charset", "utf-8");
-    srequest.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36");
-    _soundNetworkReply = Gateway->get(srequest);
-
-    connect (_soundNetworkReply,
-             SIGNAL(downloadProgress(qint64,qint64)),
-             this,
-             SLOT(onDownloadProgressChanged(qint64, qint64)));
-
-    connect (_soundNetworkReply,
-             SIGNAL(readyRead()),
-             this,
-             SLOT(onDownloadReadyRead()));
-
-    connect (_soundNetworkReply,
-             SIGNAL(finished()),
-             this,
-             SLOT(onDownloadFinished()));
-
-    connect (_soundNetworkReply,
-             SIGNAL(sslErrors(QList<QSslError>)),
-             this,
-             SLOT(onDownloadSslErrors(QList<QSslError>)));
-
-
-    /* Video specific setup is needed only when downloading the video and not
-     * only the sound stream.
-     */
-    if (isVideoMode())
+    if ((_soundNetworkReply == NULL) ||
+         _soundNetworkReply != NULL && isVideoMode())
     {
         _videoFile = new QTemporaryFile();
         _videoFile->setAutoRemove(false);
@@ -656,11 +696,11 @@ Processor::download()
 
         QNetworkRequest vrequest;
         vrequest.setUrl(QUrl(_download.videoUrl));
-        srequest.setRawHeader("Accept", "*/*");
-        srequest.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
-        srequest.setRawHeader("Accept-Language", "en-US,en;q=0.8");
-        srequest.setRawHeader("Accept-Charset", "utf-8");
-        srequest.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36");
+        vrequest.setRawHeader("Accept", "*/*");
+        vrequest.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
+        vrequest.setRawHeader("Accept-Language", "en-US,en;q=0.8");
+        vrequest.setRawHeader("Accept-Charset", "utf-8");
+        vrequest.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36");
         _videoNetworkReply = Gateway->get(vrequest);
 
         connect (_videoNetworkReply,
@@ -686,28 +726,35 @@ Processor::download()
 
 
     _status = Downloading;
+
     setDisplay(Downloading, 0, 0, 0);
+
     emit statusChanged();
 }
-
-
 
 
 
 bool
 Processor::redirect(QNetworkReply *reply)
 {
-    if (reply == _soundNetworkReply) {
+    if (reply == _soundNetworkReply)
+    {
         _soundNetworkReply->deleteLater();
-    } else if (reply == _videoNetworkReply) {
+    }
+    else if (reply == _videoNetworkReply)
+    {
         _videoNetworkReply->deleteLater();
     }
 
+
     QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
+
+
     if(redirect.isValid() && reply->url() != redirect)
     {
-        if(redirect.isRelative())
+        if(redirect.isRelative()) {
             redirect = reply->url().resolved(redirect);
+        }
 
         QNetworkRequest request;
         request.setUrl(redirect);
@@ -755,21 +802,21 @@ Processor::redirect(QNetworkReply *reply)
 
         return true;
     }
-    else {
+    else
+    {
         return false;
     }
 }
 
 
 
-
-
 QString
 Processor::getOutputPath(const QString &title, const QString &extension)
 {
-    QString separator = QDir::separator();
-    QString cleanFilename = Utility::cleanFilename(title);
-    QString returnFilename = _savePath;
+    QString separator = QDir::separator(),
+            cleanFilename = Utility::cleanFilename(title),
+            returnFilename = _savePath;
+
     returnFilename += separator;
     returnFilename += QString("%1.%2").arg(cleanFilename, extension);
 
@@ -778,12 +825,11 @@ Processor::getOutputPath(const QString &title, const QString &extension)
 
 
 
-
-
 void
 Processor::setDisplay(Status status, qint64 eta, qint64 speed, qint64 progress)
 {
     QString s = "";
+
     switch (status)
     {
         case Ready:
@@ -829,24 +875,26 @@ Processor::setDisplay(Status status, qint64 eta, qint64 speed, qint64 progress)
         }
 
         _download.etaItem->setText(remainingString);
-    } else {
+    }
+    else
+    {
         _download.etaItem->setText(tr("N/A"));
     }
+
 
     if (speed != -1)
     {
         QString s = QString::number(speed);
         _download.speedItem->setText(QString("%1 KB/s").arg(s));
-    } else {
+    }
+    else
+    {
         _download.speedItem->setText(tr("N/A"));
     }
 
 
-
     _download.progressItem->setText(QString::number(progress));
 }
-
-
 
 
 
@@ -858,20 +906,44 @@ Processor::isVideoMode()
 
 
 
-
-
 bool
 Processor::isVideoValid()
 {
-    bool hasVideoUrl = !_download.videoUrl.isEmpty();
-    bool hasSoundUrl = !_download.soundUrl.isEmpty();
-    bool hasTitle = !_download.videoTitle.isEmpty();
-    bool hasVideoExtension = !_download.videoExtension.isEmpty();
-    bool hasSoundExtension = !_download.soundExtension.isEmpty();
+    bool titleOK = true,
+         videoUrlOK = true,
+         soundUrlOK = true,
+         videoExtensionOK = true,
+         soundExtensionOK = true;
 
-    return hasVideoUrl &&
-           hasSoundUrl &&
-           hasTitle &&
-           hasVideoExtension &&
-           hasSoundExtension;
+
+    // Always available
+    if (_download.videoTitle.isEmpty()) {
+        titleOK = false;
+    }
+
+    // Always available.
+    if(_download.videoUrl.isEmpty()) {
+        videoUrlOK = false;
+    }
+
+    // Always available because video url is always available.
+    if (_download.videoExtension.isEmpty()) {
+        videoExtensionOK = false;
+    }
+
+    // Maybe available if the video website separates the video stream from the
+    // sound stream. Then an additional sound url will be available.
+    if (!_download.soundUrl.isEmpty())
+    {
+        if (_download.soundExtension.isEmpty()) {
+            soundExtensionOK = false;
+        }
+    }
+
+
+    return titleOK &&
+           videoUrlOK &&
+           soundUrlOK &&
+           videoExtensionOK &&
+           soundExtensionOK;
 }

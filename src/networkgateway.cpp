@@ -62,20 +62,23 @@ NetworkGateway::get(QNetworkRequest request)
 {
     QNetworkReply*          reply;
     QNetworkAccessManager*  manager;
+    int idx, count;
 
     reply = NULL;
+    count = _managers.count();
 
     // First search in current managers to find one which hasn't reached
     // MAX_CONNECTIONS of open connections. If one is found, use it for the
     // new request and increase its connection count by one.
-    foreach(NetworkGatewayManager item, _managers)
+    for (idx = 0; idx < count; idx++)
     {
+        NetworkGatewayManager item = _managers[idx];
         manager = item.manager;
         int connections = item.connections;
 
         if (connections < MAX_CONNECTIONS)
         {
-            item.connections++;
+            _managers[idx].connections++;
             reply = manager->get(request);
             break;
         }
