@@ -31,7 +31,7 @@
  ******************************************************************************/
 
 
-#include "processor.h"
+#include "downloader.h"
 #include "global.h"
 #include "utility.h"
 #include <math.h>
@@ -49,7 +49,7 @@
 
 
 
-Processor::Processor(Download d, QString savePath)
+Downloader::Downloader(Download d, QString savePath)
 {
     // Initialize some variables
     _savePath = savePath;
@@ -63,9 +63,9 @@ Processor::Processor(Download d, QString savePath)
     reset();
 
     connect(Tasks,
-            SIGNAL(statusChanged(Scheduler::Status, int, int)),
+            SIGNAL(statusChanged(TaskProcessor::Status, int, int)),
             this,
-            SLOT(onStatusChanged(Scheduler::Status, int, int)));
+            SLOT(onStatusChanged(TaskProcessor::Status, int, int)));
 
     if (isVideoValid())
     {
@@ -81,7 +81,7 @@ Processor::Processor(Download d, QString savePath)
 
 
 
-Processor::~Processor()
+Downloader::~Downloader()
 {
     Tasks->disconnect(this);
 }
@@ -89,7 +89,7 @@ Processor::~Processor()
 
 
 void
-Processor::start()
+Downloader::start()
 {
     // The video's information is not valid. We can't start.
     if (!isVideoValid()) {
@@ -106,7 +106,7 @@ Processor::start()
 
 
 void
-Processor::stop()
+Downloader::stop()
 {
     // The video's information is not valid. This processor never started.
     if (!isVideoValid()) {
@@ -160,7 +160,7 @@ Processor::stop()
 
 
 void
-Processor::reset()
+Downloader::reset()
 {
     QString filename = "";
 
@@ -225,15 +225,15 @@ Processor::reset()
 
 
 Download*
-Processor::getDownload()
+Downloader::getDownload()
 {
     return &_download;
 }
 
 
 
-Processor::Status
-Processor::getStatus()
+Downloader::Status
+Downloader::getStatus()
 {
     return _status;
 }
@@ -241,7 +241,7 @@ Processor::getStatus()
 
 
 void
-Processor::onDownloadFinished()
+Downloader::onDownloadFinished()
 {
     QNetworkReply::NetworkError videoError;
     QNetworkReply::NetworkError soundError;
@@ -501,13 +501,13 @@ Cleanup:
 
 
 void
-Processor::onStatusChanged(Scheduler::Status status, int pid, int exitCode)
+Downloader::onStatusChanged(TaskProcessor::Status status, int pid, int exitCode)
 {
     if (pid != _convertPid) {
         return;
     }
 
-    if (status == Scheduler::Started)
+    if (status == TaskProcessor::Started)
     {
         _status = Converting;
 
@@ -515,7 +515,7 @@ Processor::onStatusChanged(Scheduler::Status status, int pid, int exitCode)
 
         qDebug() << "Converter started";
     }
-    else if (status == Scheduler::Finished)
+    else if (status == TaskProcessor::Finished)
     {
         if (_cancelationPending) {
             return;
@@ -540,7 +540,7 @@ Processor::onStatusChanged(Scheduler::Status status, int pid, int exitCode)
 
 
 void
-Processor::onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal)
+Downloader::onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal)
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(QObject::sender());
 
@@ -595,7 +595,7 @@ Processor::onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal)
 
 
 void
-Processor::onDownloadReadyRead()
+Downloader::onDownloadReadyRead()
 {
     if (_soundNetworkReply != NULL)
     {
@@ -613,7 +613,7 @@ Processor::onDownloadReadyRead()
 
 
 void
-Processor::onDownloadSslErrors(const QList<QSslError> errors)
+Downloader::onDownloadSslErrors(const QList<QSslError> errors)
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(QObject::sender());
 
@@ -625,7 +625,7 @@ Processor::onDownloadSslErrors(const QList<QSslError> errors)
 
 
 void
-Processor::onTimerTimeout()
+Downloader::onTimerTimeout()
 {
     QTimer *timer = qobject_cast<QTimer*>(QObject::sender());
     timer->disconnect();
@@ -645,7 +645,7 @@ Processor::onTimerTimeout()
 
 
 void
-Processor::download()
+Downloader::download()
 {
     _speedElapsedTimer.start();
 
@@ -735,7 +735,7 @@ Processor::download()
 
 
 bool
-Processor::redirect(QNetworkReply *reply)
+Downloader::redirect(QNetworkReply *reply)
 {
     if (reply == _soundNetworkReply)
     {
@@ -811,7 +811,7 @@ Processor::redirect(QNetworkReply *reply)
 
 
 QString
-Processor::getOutputPath(const QString &title, const QString &extension)
+Downloader::getOutputPath(const QString &title, const QString &extension)
 {
     QString separator = QDir::separator(),
             cleanFilename = Utility::cleanFilename(title),
@@ -826,7 +826,7 @@ Processor::getOutputPath(const QString &title, const QString &extension)
 
 
 void
-Processor::setDisplay(Status status, qint64 eta, qint64 speed, qint64 progress)
+Downloader::setDisplay(Status status, qint64 eta, qint64 speed, qint64 progress)
 {
     QString s = "";
 
@@ -899,7 +899,7 @@ Processor::setDisplay(Status status, qint64 eta, qint64 speed, qint64 progress)
 
 
 bool
-Processor::isVideoMode()
+Downloader::isVideoMode()
 {
     return _download.convertExtension == "";
 }
@@ -907,7 +907,7 @@ Processor::isVideoMode()
 
 
 bool
-Processor::isVideoValid()
+Downloader::isVideoValid()
 {
     bool titleOK = true,
          videoUrlOK = true,

@@ -30,20 +30,17 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
-#include "global.h"
-#include "parser.h"
-#include "mainform.h"
-#include "settingsform.h"
-#include "aboutform.h"
-#include "messenger.h"
-#include "updater.h"
 #include <QDesktopServices>
 #include <QMessageBox>
 
-
-
+#include "main_window.h"
+#include "ui_main_window.h"
+#include "global.h"
+#include "main_form.h"
+#include "settings_form.h"
+#include "about_form.h"
+#include "messenger.h"
+#include "updater.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :

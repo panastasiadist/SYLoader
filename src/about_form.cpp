@@ -30,40 +30,96 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#ifndef PARSER_H
-#define PARSER_H
 
-#include "download.h"
-#include "extractors/youtube/youtubeextractor.h"
-#include <QObject>
-#include <QProcess>
-#include <QString>
-#include <QList>
 
-class Parser : public QObject
+#include <QDesktopServices>
+#include <QMessageBox>
+#include <QUrl>
+#include <QFile>
+#include "about_form.h"
+#include "ui_about_form.h"
+#include "global.h"
+#include "updater.h"
+
+
+
+
+
+AboutForm::AboutForm(QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::AboutForm)
 {
-    Q_OBJECT
+    ui->setupUi(this);
 
-public:
-    Parser();
-    void parse(QString url);
-    bool parsing();
-    bool isPlaylist(QString url);
-    bool isSupported(QString url);
-    QString canonicalizeUrl(QString url);
+    connect (ui->lbtnHomepage,
+             SIGNAL(clicked()),
+             this,
+             SLOT(onHomepageClicked()));
+
+    connect (ui->lbtnContact,
+             SIGNAL(clicked()),
+             this,
+             SLOT(onContactClicked()));
+
+    connect (ui->lbtnLicense,
+             SIGNAL(clicked()),
+             this,
+             SLOT(onLicenseClicked()));
+
+#if defined(WITH_OPENSSL_NOTICE)
+    ui->lblOpenSSLNotice->setVisible(true);
+#else
+    ui->lblOpenSSLNotice->setVisible(false);
+#endif
+
+    QFile file("CONTRIBUTORS.txt");
+    if(file.open(QIODevice::ReadOnly))
+    {
+        QByteArray bytes = file.readAll();
+        ui->txtContributors->setText(QString(bytes));
+        file.close();
+    }
+
+}
 
 
-private:
-    QString _url;
-    Extractor* getExtractor(QString url);
-    QList<Extractor*> _extractors;
 
 
-signals:
-    void parsed(QList<Download> downloads);
 
-public slots:
-    void onExtractorFinished(int result, QList<Download> downloads);
-};
+AboutForm::~AboutForm()
+{
+    delete ui;
+}
 
-#endif // PARSER_H
+
+
+
+
+void
+AboutForm::onContactClicked()
+{
+    QDesktopServices services;
+    services.openUrl(QUrl(CONTACT_URL));
+}
+
+
+
+
+
+void
+AboutForm::onHomepageClicked()
+{
+    QDesktopServices services;
+    services.openUrl(QUrl(HOMEPAGE_URL));
+}
+
+
+
+
+
+void
+AboutForm::onLicenseClicked()
+{
+    QDesktopServices services;
+    services.openUrl(QUrl("COPYING.txt"));
+}

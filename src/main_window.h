@@ -30,19 +30,43 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#ifndef UTILITY_H
-#define UTILITY_H
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-#include <QString>
+#include <QMainWindow>
+#include <QList>
+#include <QClipboard>
+#include "core/download.h"
+#include "core/downloader.h"
+#include "core/downloader_stats.h"
+#include "progress_item_delegate.h"
 
-class Utility
+
+
+namespace Ui {
+class MainWindow;
+}
+
+class MainWindow : public QMainWindow
 {
-private:
-    Utility() {}
+    Q_OBJECT
 
 public:
-    static bool is64Bit();
-    static QString cleanFilename(QString desiredFilename);
+    explicit MainWindow(QWidget *parent = 0);
+    ~MainWindow();
+
+private:
+    Ui::MainWindow *ui;
+    bool _downloading;
+    bool eventFilter (QObject *object, QEvent *event);
+
+private slots:
+    void onMessageBusReceive(QString msg);
+    void onMainClicked();
+    void onSettingsClicked();
+    void onAboutClicked();
+    void onFacebookClicked();
+    void onTwitterClicked();
 };
 
-#endif // UTILITY_H
+#endif // MAINWINDOW_H

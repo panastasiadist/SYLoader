@@ -30,11 +30,11 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#ifndef PROCESSOR_H
-#define PROCESSOR_H
+#ifndef DOWNLOADER_H
+#define DOWNLOADER_H
 
 #include "download.h"
-#include "scheduler.h"
+#include "task_processor.h"
 #include <QObject>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
@@ -42,7 +42,7 @@
 #include <QProcess>
 #include <QTemporaryFile>
 
-class Processor : public QObject
+class Downloader : public QObject
 {
     Q_OBJECT
 
@@ -61,8 +61,8 @@ public:
 
 
 
-    Processor(Download download, QString savePath);
-    ~Processor();
+    Downloader(Download download, QString savePath);
+    ~Downloader();
 
     void start();
     void stop();
@@ -112,8 +112,8 @@ private slots:
     void onTimerTimeout();
     void onDownloadFinished();
     void onDownloadReadyRead();
-    void onStatusChanged(Scheduler::Status status, int pid, int exitCode);
+    void onStatusChanged(TaskProcessor::Status status, int pid, int exitCode);
     void onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal);
 };
 
-#endif // PROCESSOR_H
+#endif // DOWNLOADER_H

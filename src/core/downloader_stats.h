@@ -30,10 +30,10 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#ifndef PROCESSORSTATS_H
-#define PROCESSORSTATS_H
+#ifndef DOWNLOADER_STATS_H
+#define DOWNLOADER_STATS_H
 
-struct ProcessorStats
+struct DownloaderStats
 {
     int ready;
     int downloading;
@@ -43,5 +43,5 @@ struct ProcessorStats
     int errored;
 };
 
-#endif // PROCESSORSTATS_H
+#endif // DOWNLOADER_STATS_H
 

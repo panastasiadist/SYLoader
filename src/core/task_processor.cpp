@@ -30,13 +30,13 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#include "scheduler.h"
+#include "task_processor.h"
 
 
 
 
 
-Scheduler::Scheduler()
+TaskProcessor::TaskProcessor()
 {
     _pid = 0;
     _num = 0;
@@ -47,7 +47,7 @@ Scheduler::Scheduler()
 
 
 int
-Scheduler::enqueue(QString command)
+TaskProcessor::enqueue(QString command)
 {
     _pid++;
     _queue.append(_pid);
@@ -61,7 +61,7 @@ Scheduler::enqueue(QString command)
 
 
 void
-Scheduler::abort(int pid)
+TaskProcessor::abort(int pid)
 {
     _queue.removeOne(pid);
 
@@ -82,7 +82,7 @@ Scheduler::abort(int pid)
 
 
 bool
-Scheduler::running(int pid)
+TaskProcessor::running(int pid)
 {
     /* When the queue contains a pid, then the relevant process
      * hasn't yet started.
@@ -95,7 +95,7 @@ Scheduler::running(int pid)
 
 
 void
-Scheduler::setConcurrentTasks(int num)
+TaskProcessor::setConcurrentTasks(int num)
 {
     _num = num;
 }
@@ -103,7 +103,7 @@ Scheduler::setConcurrentTasks(int num)
 
 
 void
-Scheduler::onCompleted(int exitCode)
+TaskProcessor::onCompleted(int exitCode)
 {
     QProcess *p = qobject_cast<QProcess*>(QObject::sender());
     int pid = _processes.value(p);
@@ -119,7 +119,7 @@ Scheduler::onCompleted(int exitCode)
 
 
 void
-Scheduler::process()
+TaskProcessor::process()
 {
     if (_queue.count() == 0)
         return;

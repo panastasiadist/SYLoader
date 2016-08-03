@@ -30,9 +30,6 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#include "global.h"
-#include "mainwindow.h"
-#include "scheduler.h"
 #include <QApplication>
 #include <QTextCodec>
 #include <QTranslator>
@@ -43,9 +40,12 @@
 #include <QtWidgets/QMessageBox>
 #include <QFile>
 #include <QDir>
+#include "main_window.h"
+#include "global.h"
+
 
 QSettings *Settings;
-Scheduler *Tasks;
+TaskProcessor *Tasks;
 Messenger *MessageBus;
 NetworkGateway *Gateway;
 
@@ -54,7 +54,6 @@ int
 main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-
     QApplication::setApplicationName("SYLoader");
     QApplication::setOrganizationName("SYLoader");
 
@@ -62,7 +61,7 @@ main(int argc, char *argv[])
     Settings = new QSettings();
     MessageBus = new Messenger();
     Gateway = new NetworkGateway();
-    Tasks = new Scheduler();
+    Tasks = new TaskProcessor();
     Tasks->setConcurrentTasks(1);
 
 

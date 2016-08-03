@@ -33,10 +33,11 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#include "messenger.h"
-#include "scheduler.h"
-#include "networkgateway.h"
 #include <QSettings>
+#include "core/task_processor.h"
+#include "core/network_gateway.h"
+#include "messenger.h"
+
 
 #define SOFTWARE_VERSION_MAJOR 1
 #define SOFTWARE_VERSION_MINOR 0
@@ -59,7 +60,7 @@
 
 extern QSettings *Settings;
 extern Messenger *MessageBus;
-extern Scheduler *Tasks;
+extern TaskProcessor *Tasks;
 extern NetworkGateway *Gateway;
 
 

@@ -30,53 +30,40 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#include "progressitemdelegate.h"
+#ifndef URL_PROCESSOR_H
+#define URL_PROCESSOR_H
 
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QStyledItemDelegate>
-#include <QtWidgets/QStyleOptionProgressBar>
+#include "download.h"
+#include "extractors/youtube_extractor.h"
+#include <QObject>
+#include <QProcess>
 #include <QString>
-#include <QVariant>
-#include <QLocale>
+#include <QList>
 
-ProgressItemDelegate::ProgressItemDelegate(QObject *object)
-    : QStyledItemDelegate(object) {}
-
-void
-ProgressItemDelegate::paint(
-    QPainter *painter,
-    const QStyleOptionViewItem &option,
-    const QModelIndex &index ) const
+class UrlProcessor : public QObject
 {
-    if (index.column() != 2)
-    {
-        QStyledItemDelegate::paint(painter, option, index);
-        return;
-    }
-    else
-    {
-        QStyleOptionProgressBar progressBarOption;
-        progressBarOption.state = QStyle::State_Enabled;
-        progressBarOption.direction = QApplication::layoutDirection();
-        progressBarOption.rect = option.rect;
-        progressBarOption.fontMetrics = QApplication::fontMetrics();
-        progressBarOption.minimum = 0;
-        progressBarOption.maximum = 100;
-        progressBarOption.textAlignment = Qt::AlignCenter;
-        progressBarOption.textVisible = true;
+    Q_OBJECT
 
-        int progress = index.model()
-                ->data(index.model()->index(index.row(), 2)).toInt();
+public:
+    UrlProcessor();
+    void parse(QString url);
+    bool parsing();
+    bool isPlaylist(QString url);
+    bool isSupported(QString url);
+    QString canonicalizeUrl(QString url);
 
-        progressBarOption.progress = progress < 0 ? 0 : progress;
 
-        progressBarOption.text = QString().sprintf(
-                    "%d%%",
-                    progressBarOption.progress);
+private:
+    QString _url;
+    Extractor* getExtractor(QString url);
+    QList<Extractor*> _extractors;
 
-        QApplication::style()->drawControl(
-                    QStyle::CE_ProgressBar,
-                    &progressBarOption,
-                    painter);
-    }
-}
+
+signals:
+    void parsed(QList<Download> downloads);
+
+public slots:
+    void onExtractorFinished(int result, QList<Download> downloads);
+};
+
+#endif // URL_PROCESSOR_H

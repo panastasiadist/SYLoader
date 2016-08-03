@@ -30,14 +30,15 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#include "updater.h"
-#include "global.h"
+
 #include <QUrl>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QEventLoop>
 #include <QStringList>
+#include "updater.h"
+#include "global.h"
 
 
 

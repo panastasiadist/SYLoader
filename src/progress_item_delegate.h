@@ -30,58 +30,24 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#ifndef MAINFORM_H
-#define MAINFORM_H
+#ifndef PROGRESS_ITEM_DELEGATE_H
+#define PROGRESS_ITEM_DELEGATE_H
 
-#include "parser.h"
-#include "download.h"
-#include "processor.h"
-#include "progressitemdelegate.h"
-#include "processorstats.h"
-#include <QWidget>
-#include <QList>
-#include <QClipboard>
+#include <QObject>
+#include <QtWidgets/QStyledItemDelegate>
 
-
-
-namespace Ui {
-class MainForm;
-}
-
-class MainForm : public QWidget
+class ProgressItemDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 
 public:
-    explicit MainForm(QWidget *parent = 0);
-    ~MainForm();
+    ProgressItemDelegate(QObject *object = 0);
 
-private:
-    Ui::MainForm *ui;
-    Parser _parser;
-    ProgressItemDelegate _progressItemDelegate;
-    QStandardItemModel _downloadsModel;
-    QList<Processor*> _processors;
-    QList<QString> _registeredUrls;
-
-
-    ProcessorStats getProcessorStats();
-    void registerAndParseUrl(QString url);
-    void doDownloadsFinished();
-    void applyCurrentMode();
-    void processDownloads();
-
-
-private slots:
-    void onParserFinished(QList<Download> downloads);
-    void onProcessorStatusChanged();
-    void onDownloadClicked();
-    void onStartClicked();
-    void onStopClicked();
-    void onDeleteClicked();
-    void onClearClicked();
-    void onModeCurrentIndexChanged(int);
-    void onClipboardChanged(QClipboard::Mode mode);
+    virtual void paint(
+        QPainter *painter,
+        const QStyleOptionViewItem &option,
+        const QModelIndex &index
+    ) const;
 };
 
-#endif // MAINFORM_H
+#endif // PROGRESS_ITEM_DELEGATE_H

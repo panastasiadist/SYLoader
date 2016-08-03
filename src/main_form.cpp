@@ -30,15 +30,14 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#include "mainform.h"
-#include "ui_mainform.h"
-#include "global.h"
-#include "parser.h"
-#include "settingsform.h"
-#include "aboutform.h"
-#include "messenger.h"
-
 #include <QMessageBox>
+
+#include "main_form.h"
+#include "ui_main_form.h"
+#include "global.h"
+#include "settings_form.h"
+#include "about_form.h"
+#include "messenger.h"
 
 
 MainForm::MainForm(QWidget *parent) :
@@ -130,7 +129,7 @@ MainForm::MainForm(QWidget *parent) :
 
 MainForm::~MainForm()
 {
-    foreach (Processor *processor, _processors){
+    foreach (Downloader *processor, _processors){
         processor->deleteLater();
     }
 
@@ -184,14 +183,14 @@ MainForm::onStartClicked()
     for (int index = 0; index < indexes.count(); index++)
     {
         QModelIndex modelIndex = indexes.at(index);
-        foreach (Processor *processor, _processors)
+        foreach (Downloader *processor, _processors)
         {
             if (processor->getDownload()->titleItem ==
                 _downloadsModel.item(modelIndex.row(), 0))
             {
-                Processor::Status status = processor->getStatus();
+                Downloader::Status status = processor->getStatus();
 
-                if (status == Processor::Complete)
+                if (status == Downloader::Complete)
                 {
                     QMessageBox::information(
                         this,
@@ -200,8 +199,8 @@ MainForm::onStartClicked()
                     );
                 }
 
-                if (status != Processor::Downloading &&
-                    status != Processor::Converting) {
+                if (status != Downloader::Downloading &&
+                    status != Downloader::Converting) {
                     processor->start();
                 }
                 else
@@ -236,14 +235,14 @@ MainForm::onStopClicked()
     {
         QModelIndex modelIndex = indexes.at(index);
 
-        foreach (Processor *processor, _processors)
+        foreach (Downloader *processor, _processors)
         {
             if (processor->getDownload()->titleItem ==
                 _downloadsModel.item(modelIndex.row(), 0))
             {
-                Processor::Status status = processor->getStatus();
-                if (status == Processor::Downloading ||
-                    status == Processor::Converting) {
+                Downloader::Status status = processor->getStatus();
+                if (status == Downloader::Downloading ||
+                    status == Downloader::Converting) {
                     processor->stop();
                 }
                 else
@@ -266,26 +265,26 @@ MainForm::onStopClicked()
 void
 MainForm::onDownloadClicked()
 {
-    ProcessorStats stats = getProcessorStats();
+    DownloaderStats stats = getProcessorStats();
 
     // If downloads in progress, then the button is used as a cancel button.
     if (stats.downloading + stats.converting > 0)
     {
-        foreach (Processor *processor, _processors) {
-            Processor::Status status = processor->getStatus();
-            if (status == Processor::Ready ||
-                status == Processor::Downloading ||
-                status == Processor::Converting) {
+        foreach (Downloader *processor, _processors) {
+            Downloader::Status status = processor->getStatus();
+            if (status == Downloader::Ready ||
+                status == Downloader::Downloading ||
+                status == Downloader::Converting) {
                 processor->stop();
             }
         }
     }
     else
     {
-        foreach (Processor *p, _processors)
+        foreach (Downloader *p, _processors)
         {
-            Processor::Status status = p->getStatus();
-            if (status != Processor::Complete && status != Processor::Ready) {
+            Downloader::Status status = p->getStatus();
+            if (status != Downloader::Complete && status != Downloader::Ready) {
                 p->reset();
             }
         }
@@ -311,14 +310,14 @@ MainForm::onDeleteClicked()
     {
         QModelIndex modelIndex = indexes.at(index);
 
-        foreach (Processor *processor, _processors)
+        foreach (Downloader *processor, _processors)
         {
             Download* download = processor->getDownload();
             if (download->titleItem == _downloadsModel.item(modelIndex.row(), 0))
             {
-                Processor::Status status = processor->getStatus();
-                if (status != Processor::Downloading &&
-                    status != Processor::Converting)
+                Downloader::Status status = processor->getStatus();
+                if (status != Downloader::Downloading &&
+                    status != Downloader::Converting)
                 {
                     processor->disconnect();
                     _processors.removeOne(processor);
@@ -353,11 +352,11 @@ MainForm::onClearClicked()
 {
     bool downloading = false;
 
-    foreach (Processor *processor, _processors)
+    foreach (Downloader *processor, _processors)
     {
-        Processor::Status status = processor->getStatus();
-        if (status == Processor::Downloading ||
-            status == Processor::Converting)
+        Downloader::Status status = processor->getStatus();
+        if (status == Downloader::Downloading ||
+            status == Downloader::Converting)
         {
             downloading = true;
             break;
@@ -374,7 +373,7 @@ MainForm::onClearClicked()
         return;
     }
 
-    foreach (Processor *processor, _processors)
+    foreach (Downloader *processor, _processors)
     {
         processor->disconnect();
         processor->deleteLater();
@@ -397,16 +396,16 @@ MainForm::onClearClicked()
  */
 void MainForm::onProcessorStatusChanged()
 {
-    Processor *processor = qobject_cast<Processor*>(QObject::sender());
-    Processor::Status status = processor->getStatus();
+    Downloader *processor = qobject_cast<Downloader*>(QObject::sender());
+    Downloader::Status status = processor->getStatus();
 
-    if (status == Processor::ErrorConnection ||
-        status == Processor::ErrorIO ||
-        status == Processor::Complete ||
-        status == Processor::Converting ||
-        status == Processor::Canceled)
+    if (status == Downloader::ErrorConnection ||
+        status == Downloader::ErrorIO ||
+        status == Downloader::Complete ||
+        status == Downloader::Converting ||
+        status == Downloader::Canceled)
     {
-        ProcessorStats stats = getProcessorStats();
+        DownloaderStats stats = getProcessorStats();
         int run = stats.canceled + stats.completed + stats.errored;
 
         if (run == _processors.count()) {
@@ -476,7 +475,7 @@ MainForm::onParserFinished(QList<Download> downloads)
         }
 
 
-        Processor *p = new Processor(d, path);
+        Downloader *p = new Downloader(d, path);
 
         connect(p,
                 SIGNAL(statusChanged()),
@@ -516,7 +515,7 @@ MainForm::applyCurrentMode()
     // Otherwise specify no conversion extension.
     // The processor will keep the downloaded video intact.
     QString ext = ui->cbxMode->currentIndex() == 0 ? "mp3" : "";
-    foreach (Processor *processor, _processors) {
+    foreach (Downloader *processor, _processors) {
         processor->getDownload()->convertExtension = ext;
     }
 }
@@ -528,9 +527,9 @@ MainForm::applyCurrentMode()
 void
 MainForm::doDownloadsFinished()
 {
-    QList<Processor::Status> statuses;
+    QList<Downloader::Status> statuses;
 
-    foreach (Processor *processor, _processors) {
+    foreach (Downloader *processor, _processors) {
         statuses.append(processor->getStatus());
     }
 
@@ -541,12 +540,12 @@ MainForm::doDownloadsFinished()
 
     if (statuses.count() > 0)
     {
-        if (statuses.contains(Processor::ErrorConnection))
+        if (statuses.contains(Downloader::ErrorConnection))
         {
             QString msg = tr("One or more downloads have failed due to Internet connection problems. Check your Internet connection and try again!");
             QMessageBox::warning(this, tr("Warning"), msg);
         }
-        else if (statuses.contains(Processor::ErrorIO))
+        else if (statuses.contains(Downloader::ErrorIO))
         {
             QString msg = tr("One or more downloads have failed because their conversion failed.");
             QMessageBox::warning(this, tr("Warning"), msg);
@@ -573,10 +572,10 @@ MainForm::registerAndParseUrl(QString url)
 
 
 
-ProcessorStats
+DownloaderStats
 MainForm::getProcessorStats()
 {
-    ProcessorStats stats;
+    DownloaderStats stats;
     stats.canceled = 0;
     stats.completed = 0;
     stats.converting = 0;
@@ -584,28 +583,28 @@ MainForm::getProcessorStats()
     stats.errored = 0;
     stats.ready = 0;
 
-    foreach (Processor *processor, _processors)
+    foreach (Downloader *processor, _processors)
     {
-        Processor::Status status = processor->getStatus();
+        Downloader::Status status = processor->getStatus();
         switch (status)
         {
-            case Processor::Ready:
+            case Downloader::Ready:
                 stats.ready++;
                 break;
-            case Processor::Downloading:
+            case Downloader::Downloading:
                 stats.downloading++;
                 break;
-            case Processor::Converting:
+            case Downloader::Converting:
                 stats.converting++;
                 break;
-            case Processor::Complete:
+            case Downloader::Complete:
                 stats.completed++;
                 break;
-            case Processor::Canceled:
+            case Downloader::Canceled:
                 stats.canceled++;
                 break;
-            case Processor::ErrorConnection:
-            case Processor::ErrorIO:
+            case Downloader::ErrorConnection:
+            case Downloader::ErrorIO:
                 stats.errored++;
         }
     }
@@ -620,7 +619,7 @@ MainForm::getProcessorStats()
 void
 MainForm::processDownloads()
 {
-    ProcessorStats stats = getProcessorStats();
+    DownloaderStats stats = getProcessorStats();
     int downloading = stats.downloading;
     int ready = stats.ready;
 
@@ -654,9 +653,9 @@ MainForm::processDownloads()
             newDownloadSlots = availableSlots;
         }
 
-        foreach (Processor *processor, _processors)
+        foreach (Downloader *processor, _processors)
         {
-            if (processor->getStatus() == Processor::Ready)
+            if (processor->getStatus() == Downloader::Ready)
             {
                 processor->start();
                 newDownloadSlots--;

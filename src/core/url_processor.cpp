@@ -30,19 +30,19 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#include "parser.h"
-#include "helper.h"
+#include "url_processor.h"
+#include "utility.h"
 #include <QList>
 #include <QDebug>
 
 
 
-Parser::Parser() {}
+UrlProcessor::UrlProcessor() {}
 
 
 
 Extractor*
-Parser::getExtractor(QString url)
+UrlProcessor::getExtractor(QString url)
 {
     if (YoutubeExtractor::isSupported(url))
     {
@@ -58,7 +58,7 @@ Parser::getExtractor(QString url)
 
 
 void
-Parser::parse(QString url)
+UrlProcessor::parse(QString url)
 {
     _url = url;
 
@@ -87,7 +87,7 @@ Parser::parse(QString url)
 
 
 bool
-Parser::parsing()
+UrlProcessor::parsing()
 {
     return _extractors.length() > 0;
 }
@@ -95,7 +95,7 @@ Parser::parsing()
 
 
 QString
-Parser::canonicalizeUrl(QString url)
+UrlProcessor::canonicalizeUrl(QString url)
 {
     Extractor* extractor = this->getExtractor(url);
 
@@ -112,7 +112,7 @@ Parser::canonicalizeUrl(QString url)
 
 
 bool
-Parser::isPlaylist(QString url)
+UrlProcessor::isPlaylist(QString url)
 {
     Extractor* extractor = this->getExtractor(url);
 
@@ -129,7 +129,7 @@ Parser::isPlaylist(QString url)
 
 
 bool
-Parser::isSupported(QString url)
+UrlProcessor::isSupported(QString url)
 {
     return YoutubeExtractor::isSupported(url);
 }
@@ -137,7 +137,7 @@ Parser::isSupported(QString url)
 
 
 void
-Parser::onExtractorFinished(int result, QList<Download> downloads)
+UrlProcessor::onExtractorFinished(int result, QList<Download> downloads)
 {
     Extractor* extractor = qobject_cast<Extractor*>(QObject::sender());
     extractor->deleteLater();
@@ -146,7 +146,7 @@ Parser::onExtractorFinished(int result, QList<Download> downloads)
     QList<Download> temp;
 
     foreach(Download d, downloads) {
-        temp.append(Helper::decorateDownload(d));
+        temp.append(Utility::decorateDownload(d));
     }
 
     emit parsed(temp);

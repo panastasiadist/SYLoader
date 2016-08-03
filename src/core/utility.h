@@ -30,40 +30,21 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#ifndef NETWORKGATEWAY_H
-#define NETWORKGATEWAY_H
+#ifndef UTILITY_H
+#define UTILITY_H
 
-#include <QObject>
-#include <QMap>
-#include <QList>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
+#include <QString>
+#include "download.h"
 
-struct NetworkGatewayManager
+class Utility
 {
-    QNetworkAccessManager *manager;
-    int connections;
-};
-
-
-class NetworkGateway : public QObject
-{
-    Q_OBJECT
-
 private:
-    QList<NetworkGatewayManager> _managers;
-
+    Utility() {}
 
 public:
-    NetworkGateway();
-    ~NetworkGateway();
-    QNetworkReply *get(QNetworkRequest request);
-
-
-signals:
-
-public slots:
-    void onFinished(QNetworkReply *reply);
+    static bool is64Bit();
+    static QString cleanFilename(QString desiredFilename);
+    static Download decorateDownload(Download download);
 };
 
-#endif // NETWORKGATEWAY_H
+#endif // UTILITY_H

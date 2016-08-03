@@ -13,44 +13,44 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    parser.cpp \
-    progressitemdelegate.cpp \
-    processor.cpp \
-    utility.cpp \
+    core/utility.cpp \
     updater.cpp \
-    mainform.cpp \
-    aboutform.cpp \
-    settingsform.cpp \
     messenger.cpp \
-    scheduler.cpp \
-    networkgateway.cpp \
-    extractors/youtube/youtubeextractor.cpp \
-    helper.cpp
+    core/downloader.cpp \
+    core/network_gateway.cpp \
+    core/url_processor.cpp \
+    core/task_processor.cpp \
+    core/extractors/youtube_extractor.cpp \
+    main_form.cpp \
+    main_window.cpp \
+    settings_form.cpp \
+    progress_item_delegate.cpp \
+    about_form.cpp
 
-HEADERS  += mainwindow.h \
-    download.h \
-    parser.h \
-    progressitemdelegate.h \
+HEADERS  += \
+    core/download.h \
     global.h \
-    processor.h \
-    utility.h \
-    processorstats.h \
     updater.h \
-    mainform.h \
-    aboutform.h \
-    settingsform.h \
     messenger.h \
-    scheduler.h \
-    networkgateway.h \
-    extractors/youtube/youtubeextractor.h \
-    extractor.h \
-    helper.h
+    core/utility.h \
+    core/extractor.h \
+    core/downloader.h \
+    core/network_gateway.h \
+    core/downloader_stats.h \
+    core/url_processor.h \
+    core/task_processor.h \
+    core/extractors/youtube_extractor.h \
+    progress_item_delegate.h \
+    settings_form.h \
+    main_window.h \
+    main_form.h \
+    about_form.h
 
-FORMS    += mainwindow.ui \
-    mainform.ui \
-    aboutform.ui \
-    settingsform.ui
+FORMS    += \
+    about_form.ui \
+    main_form.ui \
+    main_window.ui \
+    settings_form.ui
 
 RESOURCES += \
     resources.qrc

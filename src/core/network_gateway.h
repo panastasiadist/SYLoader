@@ -30,44 +30,40 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef NETWORK_GATEWAY_H
+#define NETWORK_GATEWAY_H
 
-#include "parser.h"
-#include "download.h"
-#include "processor.h"
-#include "progressitemdelegate.h"
-#include "processorstats.h"
-#include <QMainWindow>
+#include <QObject>
+#include <QMap>
 #include <QList>
-#include <QClipboard>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+
+struct NetworkGatewayManager
+{
+    QNetworkAccessManager *manager;
+    int connections;
+};
 
 
-
-namespace Ui {
-class MainWindow;
-}
-
-class MainWindow : public QMainWindow
+class NetworkGateway : public QObject
 {
     Q_OBJECT
 
-public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
-
 private:
-    Ui::MainWindow *ui;
-    bool _downloading;
-    bool eventFilter (QObject *object, QEvent *event);
+    QList<NetworkGatewayManager> _managers;
 
-private slots:
-    void onMessageBusReceive(QString msg);
-    void onMainClicked();
-    void onSettingsClicked();
-    void onAboutClicked();
-    void onFacebookClicked();
-    void onTwitterClicked();
+
+public:
+    NetworkGateway();
+    ~NetworkGateway();
+    QNetworkReply *get(QNetworkRequest request);
+
+
+signals:
+
+public slots:
+    void onFinished(QNetworkReply *reply);
 };
 
-#endif // MAINWINDOW_H
+#endif // NETWORK_GATEWAY_H

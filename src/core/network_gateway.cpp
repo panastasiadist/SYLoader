@@ -30,7 +30,7 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#include "networkgateway.h"
+#include "network_gateway.h"
 
 
 // The maximum number of requests a manager will concurrently handle before

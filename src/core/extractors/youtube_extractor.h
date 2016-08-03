@@ -1,9 +1,11 @@
-#ifndef YOUTUBEEXTRACTOR_H
-#define YOUTUBEEXTRACTOR_H
+#ifndef YOUTUBE_EXTRACTOR_H
+#define YOUTUBE_EXTRACTOR_H
 
-#include "../../extractor.h"
+
 #include "QObject"
 #include "QProcess"
+#include "core/extractor.h"
+
 
 class YoutubeExtractor : public Extractor
 {
@@ -29,4 +31,4 @@ public slots:
 };
 
 
-#endif // YOUTUBEEXTRACTOR_H
+#endif // YOUTUBE_EXTRACTOR_H

@@ -30,93 +30,53 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#include "aboutform.h"
-#include "ui_aboutform.h"
-#include "global.h"
-#include "updater.h"
-#include <QDesktopServices>
-#include <QMessageBox>
-#include <QUrl>
-#include <QFile>
+#include "progress_item_delegate.h"
 
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QStyledItemDelegate>
+#include <QtWidgets/QStyleOptionProgressBar>
+#include <QString>
+#include <QVariant>
+#include <QLocale>
 
+ProgressItemDelegate::ProgressItemDelegate(QObject *object)
+    : QStyledItemDelegate(object) {}
 
-
-AboutForm::AboutForm(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::AboutForm)
+void
+ProgressItemDelegate::paint(
+    QPainter *painter,
+    const QStyleOptionViewItem &option,
+    const QModelIndex &index ) const
 {
-    ui->setupUi(this);
-
-    connect (ui->lbtnHomepage,
-             SIGNAL(clicked()),
-             this,
-             SLOT(onHomepageClicked()));
-
-    connect (ui->lbtnContact,
-             SIGNAL(clicked()),
-             this,
-             SLOT(onContactClicked()));
-
-    connect (ui->lbtnLicense,
-             SIGNAL(clicked()),
-             this,
-             SLOT(onLicenseClicked()));
-
-#if defined(WITH_OPENSSL_NOTICE)
-    ui->lblOpenSSLNotice->setVisible(true);
-#else
-    ui->lblOpenSSLNotice->setVisible(false);
-#endif
-
-    QFile file("CONTRIBUTORS.txt");
-    if(file.open(QIODevice::ReadOnly))
+    if (index.column() != 2)
     {
-        QByteArray bytes = file.readAll();
-        ui->txtContributors->setText(QString(bytes));
-        file.close();
+        QStyledItemDelegate::paint(painter, option, index);
+        return;
     }
+    else
+    {
+        QStyleOptionProgressBar progressBarOption;
+        progressBarOption.state = QStyle::State_Enabled;
+        progressBarOption.direction = QApplication::layoutDirection();
+        progressBarOption.rect = option.rect;
+        progressBarOption.fontMetrics = QApplication::fontMetrics();
+        progressBarOption.minimum = 0;
+        progressBarOption.maximum = 100;
+        progressBarOption.textAlignment = Qt::AlignCenter;
+        progressBarOption.textVisible = true;
 
-}
+        int progress = index.model()
+                ->data(index.model()->index(index.row(), 2)).toInt();
 
+        progressBarOption.progress = progress < 0 ? 0 : progress;
 
+        progressBarOption.text = QString().sprintf(
+                    "%d%%",
+                    progressBarOption.progress);
 
-
-
-AboutForm::~AboutForm()
-{
-    delete ui;
-}
-
-
-
-
-
-void
-AboutForm::onContactClicked()
-{
-    QDesktopServices services;
-    services.openUrl(QUrl(CONTACT_URL));
-}
-
-
-
-
-
-void
-AboutForm::onHomepageClicked()
-{
-    QDesktopServices services;
-    services.openUrl(QUrl(HOMEPAGE_URL));
-}
-
-
-
-
-
-void
-AboutForm::onLicenseClicked()
-{
-    QDesktopServices services;
-    services.openUrl(QUrl("COPYING.txt"));
+        QApplication::style()->drawControl(
+                    QStyle::CE_ProgressBar,
+                    &progressBarOption,
+                    painter);
+    }
 }

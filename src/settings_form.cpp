@@ -30,15 +30,15 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#include "settingsform.h"
-#include "ui_settingsform.h"
-#include "global.h"
+
+
 #include <QDir>
 #include <QStringList>
 #include <QFileDialog>
 #include <QMessageBox>
-
-
+#include "settings_form.h"
+#include "ui_settings_form.h"
+#include "global.h"
 
 
 

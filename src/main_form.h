@@ -30,24 +30,57 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#ifndef PROGRESSITEMDELEGATE_H
-#define PROGRESSITEMDELEGATE_H
+#ifndef MAINFORM_H
+#define MAINFORM_H
 
-#include <QObject>
-#include <QtWidgets/QStyledItemDelegate>
+#include <QWidget>
+#include <QList>
+#include <QClipboard>
+#include "core/url_processor.h"
+#include "core/download.h"
+#include "core/downloader.h"
+#include "core/downloader_stats.h"
+#include "progress_item_delegate.h"
 
-class ProgressItemDelegate : public QStyledItemDelegate
+
+namespace Ui {
+class MainForm;
+}
+
+class MainForm : public QWidget
 {
     Q_OBJECT
 
 public:
-    ProgressItemDelegate(QObject *object = 0);
+    explicit MainForm(QWidget *parent = 0);
+    ~MainForm();
 
-    virtual void paint(
-        QPainter *painter,
-        const QStyleOptionViewItem &option,
-        const QModelIndex &index
-    ) const;
+private:
+    Ui::MainForm *ui;
+    ProgressItemDelegate _progressItemDelegate;
+    QStandardItemModel _downloadsModel;
+    QList<Downloader*> _processors;
+    QList<QString> _registeredUrls;
+    UrlProcessor _parser;
+
+
+    DownloaderStats getProcessorStats();
+    void registerAndParseUrl(QString url);
+    void doDownloadsFinished();
+    void applyCurrentMode();
+    void processDownloads();
+
+
+private slots:
+    void onParserFinished(QList<Download> downloads);
+    void onProcessorStatusChanged();
+    void onDownloadClicked();
+    void onStartClicked();
+    void onStopClicked();
+    void onDeleteClicked();
+    void onClearClicked();
+    void onModeCurrentIndexChanged(int);
+    void onClipboardChanged(QClipboard::Mode mode);
 };
 
-#endif // PROGRESSITEMDELEGATE_H
+#endif // MAINFORM_H

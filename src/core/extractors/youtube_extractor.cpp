@@ -30,7 +30,7 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#include "youtubeextractor.h"
+#include "youtube_extractor.h"
 #include <QByteArray>
 #include <QJsonDocument>
 #include <QJsonObject>

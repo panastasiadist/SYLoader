@@ -30,15 +30,15 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#ifndef SCHEDULER_H
-#define SCHEDULER_H
+#ifndef TASK_PROCESSOR_H
+#define TASK_PROCESSOR_H
 
 #include <QObject>
 #include <QMap>
 #include <QQueue>
 #include <QProcess>
 
-class Scheduler : public QObject
+class TaskProcessor : public QObject
 {
     Q_OBJECT
 public:
@@ -47,7 +47,7 @@ public:
         Finished
     };
 
-    Scheduler();
+    TaskProcessor();
     int enqueue(QString command);
     void abort(int pid);
     bool running(int pid);
@@ -63,10 +63,10 @@ private:
     void process();
 
 signals:
-    void statusChanged(Scheduler::Status status, int pid, int exitCode);
+    void statusChanged(TaskProcessor::Status status, int pid, int exitCode);
 
 public slots:
     void onCompleted(int exitCode);
 };
 
-#endif // SCHEDULER_H
+#endif // TASK_PROCESSOR_H
