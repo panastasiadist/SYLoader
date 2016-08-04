@@ -47,7 +47,8 @@ HEADERS  += \
     main_form.h \
     about_form.h \
     core/queue_processor.h \
-    core/downloader_progress.h
+    core/downloader_progress.h \
+    core/output_format.h
 
 FORMS    += \
     about_form.ui \

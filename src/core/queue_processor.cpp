@@ -90,12 +90,15 @@ QueueProcessor::remove(int id)
 }
 
 
+
 bool
 QueueProcessor::clear()
 {
-    foreach (Downloader *downloader, _idToDownloader.values())
+    foreach (int id, _idToDownloader.keys())
     {
-        downloader->deleteLater();
+        Downloader *downloader = _idToDownloader.value(id);
+        //downloader->disconnect(this);
+        delete downloader;
     }
 
     _queue.empty();

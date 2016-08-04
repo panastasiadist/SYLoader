@@ -37,11 +37,12 @@
 #include <QList>
 #include <QClipboard>
 #include <QMap>
-#include "core/url_processor.h"
+#include "core/output_format.h"
 #include "core/download.h"
 #include "core/downloader.h"
 #include "core/downloader_stats.h"
 #include "core/downloader_progress.h"
+#include "core/url_processor.h"
 #include "core/queue_processor.h"
 #include "progress_item_delegate.h"
 
@@ -62,11 +63,12 @@ private:
     Ui::MainForm *ui;
     ProgressItemDelegate _progressItemDelegate;
     QStandardItemModel _downloadsModel;
-    //QList<Downloader*> _processors;
     QList<QString> _registeredUrls;
     UrlProcessor _parser;
     QueueProcessor _processor;
     QMap<int, int> _idToRowIndex;
+    QList<OutputFormat> _outputFormats;
+    bool _loaded = false;
 
 
     DownloaderStats getProcessorStats();

@@ -251,18 +251,7 @@ border-bottom:1px solid #dfdfdf
          </spacer>
         </item>
         <item>
-         <widget class="QComboBox" name="cbxMode">
-          <item>
-           <property name="text">
-            <string>I want Music!</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>I want Videos!</string>
-           </property>
-          </item>
-         </widget>
+         <widget class="QComboBox" name="cbxMode"/>
         </item>
         <item>
          <widget class="QPushButton" name="btnDownload">

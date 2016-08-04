@@ -104,7 +104,7 @@ private:
     void download();
     bool redirect(QNetworkReply *reply);
     bool isVideoMode();
-    bool isVideoValid();
+    bool isDownloadValid();
     void setStatus(Status status);
     void setProgress(qint64 eta, qint64 speed, qint64 percent);
 

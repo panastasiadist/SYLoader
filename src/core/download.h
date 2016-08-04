@@ -34,6 +34,7 @@
 #define DOWNLOAD_H
 
 #include <QStandardItem>
+#include "output_format.h"
 
 struct Download
 {
@@ -43,11 +44,12 @@ struct Download
     QString videoTitle;
     QString videoExtension;
     QString soundExtension;
-    QString convertExtension;
+    //QString convertExtension;
     QString artist;
     QString title;
     QString coartist;
     QString filename;
+    OutputFormat outputFormat;
     //QString savefile;
     //QStandardItem *titleItem;
     //QStandardItem *statusItem;

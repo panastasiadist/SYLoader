@@ -38,6 +38,7 @@
 #include "settings_form.h"
 #include "about_form.h"
 #include "messenger.h"
+#include "core/output_format.h"
 
 
 MainForm::MainForm(QWidget *parent) :
@@ -107,6 +108,7 @@ MainForm::MainForm(QWidget *parent) :
             this,
             SLOT(onDownloadProgressChanged(int, DownloaderProgress)));
 
+
     _processor.setAutoProcessing(false);
     _processor.setSavepath(Settings->value("download_path").toString());
     _processor.setConcurrentDownloads(Settings->value("sim_downloads").toInt());
@@ -116,7 +118,6 @@ MainForm::MainForm(QWidget *parent) :
     _downloadsModel.setHorizontalHeaderItem(2, new QStandardItem(tr("Progress")));
     _downloadsModel.setHorizontalHeaderItem(3, new QStandardItem(tr("Speed")));
     _downloadsModel.setHorizontalHeaderItem(4, new QStandardItem(tr("ETA")));
-
 
     ui->tvwDownloads->setModel(&_downloadsModel);
     ui->tvwDownloads->verticalHeader()->setVisible(false);
@@ -130,30 +131,70 @@ MainForm::MainForm(QWidget *parent) :
     ui->tvwDownloads->setItemDelegate(&_progressItemDelegate);
 
 
-    // Set UI according on settings
-    switch (Settings->value("download_mode").toInt())
-    {
-        case 0:
-            ui->cbxMode->setCurrentIndex(0); // keep music
-            break;
-        case 1:
-            ui->cbxMode->setCurrentIndex(1); // keep video and music
-            break;
-        default:
-            ui->cbxMode->setCurrentIndex(0);
+    OutputFormat mp3Format;
+    mp3Format.title = tr("MP3 Music");
+    mp3Format.extension = "mp3";
+    mp3Format.isVideo = false;
+    mp3Format.uid = 0;
+
+    OutputFormat mp4Format;
+    mp4Format.title = tr("MP4 Video");
+    mp4Format.extension = "mp4";
+    mp4Format.isVideo = true;
+    mp4Format.uid = 1;
+
+    OutputFormat aviFormat;
+    aviFormat.title = tr("AVI Video");
+    aviFormat.extension = "avi";
+    aviFormat.isVideo = true;
+    aviFormat.uid = 2;
+
+    OutputFormat oggFormat;
+    oggFormat.title = tr("OGG Music");
+    oggFormat.extension = "ogg";
+    oggFormat.isVideo = false;
+    oggFormat.uid = 3;
+
+    OutputFormat ogvFormat;
+    ogvFormat.title = tr("OGV Video");
+    ogvFormat.extension = "ogv";
+    ogvFormat.isVideo = true;
+    ogvFormat.uid = 4;
+
+    _outputFormats.append(mp3Format);
+    _outputFormats.append(mp4Format);
+    _outputFormats.append(aviFormat);
+    _outputFormats.append(oggFormat);
+    _outputFormats.append(ogvFormat);
+
+
+    foreach (OutputFormat format, _outputFormats) {
+        ui->cbxMode->addItem(format.title);
     }
 
+
+    int outputFormatId = Settings->value("download_mode").toInt();
+
+
+    // Set Output Format according to stored format id.
+    int idx;
+    for (idx = 0; idx < _outputFormats.length(); idx++)
+    {
+        if (_outputFormats[idx].uid == outputFormatId) {
+            ui->cbxMode->setCurrentIndex(idx);
+        }
+    }
+
+
     ui->btnDownload->setEnabled(false);
+
+    _loaded = true;
 }
-
-
 
 
 
 MainForm::~MainForm()
 {
-    _processor.clear();
-
     delete ui;
 }
 
@@ -162,7 +203,6 @@ MainForm::~MainForm()
 void
 MainForm::onModeCurrentIndexChanged(int)
 {
-    Settings->setValue("download_mode", ui->cbxMode->currentIndex());
     applyCurrentMode();
 }
 
@@ -212,7 +252,8 @@ MainForm::onStartClicked()
     else
     {
         if (status != Downloader::Downloading &&
-            status != Downloader::Converting) {
+            status != Downloader::Converting)
+        {
             _processor.start(downloadId);
         }
         else
@@ -316,7 +357,8 @@ MainForm::onClearClicked()
         QMessageBox::information(
             this,
             tr("Information"),
-            tr("One or more downloads are in progress. Please cancel them first.")
+            tr("One or more downloads are in progress. \
+               Please cancel them first.")
         );
         return;
     }
@@ -418,16 +460,19 @@ MainForm::onDownloadsFinished()
 
     MessageBus->send("downloading_finished");
 
-    /*if (statuses.count() > 0)
+    if (statuses.count() > 0)
     {
         if (statuses.contains(Downloader::ErrorConnection))
         {
-            QString msg = tr("One or more downloads have failed due to Internet connection problems. Check your Internet connection and try again!");
+            QString msg = tr("One or more downloads have failed due to \
+                             Internet connection problems. Check your Internet \
+                             connection and try again!");
             QMessageBox::warning(this, tr("Warning"), msg);
         }
         else if (statuses.contains(Downloader::ErrorIO))
         {
-            QString msg = tr("One or more downloads have failed because their conversion failed.");
+            QString msg = tr("One or more downloads have failed because their \
+                             conversion failed.");
             QMessageBox::warning(this, tr("Warning"), msg);
         }
         else
@@ -435,7 +480,7 @@ MainForm::onDownloadsFinished()
             QString msg = tr("Hooray! Your downloads have been completed.");
             QMessageBox::information(this, tr("Information"), msg);
         }
-    }*/
+    }
 }
 
 
@@ -443,8 +488,9 @@ MainForm::onDownloadsFinished()
 void
 MainForm::onParserFinished(QList<Download> downloads)
 {
-    int count = downloads.length();
+    OutputFormat format = _outputFormats.at(ui->cbxMode->currentIndex());
 
+    int count = downloads.length();
 
     foreach (Download d, downloads)
     {
@@ -471,6 +517,8 @@ MainForm::onParserFinished(QList<Download> downloads)
             _registeredUrls.append(_parser.canonicalizeUrl(d.normalUrl));
         }
 
+        d.outputFormat = format;
+
         int id = _processor.enqueue(d);
         _idToRowIndex.insert(id, _downloadsModel.rowCount() - 1);
 
@@ -479,9 +527,6 @@ MainForm::onParserFinished(QList<Download> downloads)
 
         ui->btnDownload->setEnabled(true);
     }
-
-    // New downloads have been added. Set their mode.
-    applyCurrentMode();
 
     _processor.setConcurrentDownloads(Settings->value("sim_downloads").toInt());
 
@@ -502,17 +547,30 @@ MainForm::onParserFinished(QList<Download> downloads)
 void
 MainForm::applyCurrentMode()
 {
-    // If index == 0, then the user want to keep the sound of the video
-    // The processor will convert the downloaded sound stream to mp3.
-    // Otherwise specify no conversion extension.
-    // The processor will keep the downloaded video intact.
+    OutputFormat format = _outputFormats.at(ui->cbxMode->currentIndex());
 
-    QString ext = ui->cbxMode->currentIndex() == 0 ? "mp3" : "";
+    // Store the new output format id in order to be remembered on next launch.
+    if (_loaded) {
+        Settings->setValue("download_mode", format.uid);
+    }
+
+    // Apply the new output format setting to all downloaders not currently
+    // downloading or converting.
+
     foreach (int downloadId, _idToRowIndex.keys())
     {
-        _processor.getDownloader(downloadId)
-                ->getDownload()
-                ->convertExtension = ext;
+        // Ask the Processor for the downloader assigned to the download id.
+        Downloader *downloader = _processor.getDownloader(downloadId);
+
+        // Ready downloader's status data and act accordingly.
+        Downloader::Status status = downloader->getStatus();
+
+        if (status != Downloader::Downloading &&
+            status != Downloader::Converting)
+        {
+            Download *download = downloader->getDownload();
+            download->outputFormat = format;
+        }
     }
 }
 

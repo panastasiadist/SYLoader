@@ -69,7 +69,7 @@ Downloader::Downloader(Download d, QString savePath)
 
     reset();
 
-    if (isVideoValid())
+    if (isDownloadValid())
     {
         qDebug() << QString("Processing %1. Artist: %2. Coartist: %3. Title: %4")
                     .arg(d.videoTitle, d.artist, d.coartist, d.title);
@@ -84,7 +84,7 @@ Downloader::Downloader(Download d, QString savePath)
 
 Downloader::~Downloader()
 {
-    Tasks->disconnect(this);
+    //Tasks->disconnect(this);
 }
 
 
@@ -93,7 +93,7 @@ void
 Downloader::start()
 {
     // The video's information is not valid. We can't start.
-    if (!isVideoValid()) {
+    if (!isDownloadValid()) {
         return;
     }
 
@@ -108,7 +108,7 @@ void
 Downloader::stop()
 {
     // The video's information is not valid. This processor never started.
-    if (!isVideoValid()) {
+    if (!isDownloadValid()) {
         return;
     }
 
@@ -192,7 +192,7 @@ Downloader::reset()
 
     _download.filename = filename;
 
-    QString extension = _download.convertExtension;
+    QString extension = _download.outputFormat.extension;
     QString savePath = getOutputPath(filename, extension);
 
     if (QFile::exists(savePath))
@@ -351,81 +351,79 @@ Downloader::onDownloadFinished()
                     artist += " ft. " + _download.coartist;
                 }
 
-                // The filename so far contains the artist's name
+                // The filename so far contains the artist's name.
                 // Write it using ID3 tags.
-                iargs += " -metadata artist=\""+artist+"\" ";
-                iargs += " -metadata title=\""+_download.title+"\" ";
+                iargs += " -metadata artist=\"" + artist + "\" ";
+                iargs += " -metadata title=\"" + _download.title + "\" ";
             }
 
             QString command;
-
             QString filename = _download.filename;
-            QString extension = _download.convertExtension;
+            QString extension = _download.outputFormat.extension;
             QString savePath = getOutputPath(filename, extension);
 
-            // Video service which separates sound and video stream.
-            // The video was requested as both streams have been downloaded.
-            // We will merge them into the final video file.
+
             if (_videoNetworkReply != NULL && _soundNetworkReply != NULL)
             {
+                // Video service which separates sound and video stream.
+                // The video was requested as both streams have been downloaded.
+                // We will merge them into the final video file.
+
                 QString vfilename = _videoFile->fileName(),
                         sfilename = _soundFile->fileName(),
-                        args = "%1 -i \"%2\" -i \"%3\" -acodec copy -vcodec copy %4 \"%5\"";
+                        args = "%1 -i \"%2\" -i \"%3\" %4 \"%5\"";
 
                 command = QString(args)
-                          .arg(FFMPEG_PATH,
-                               vfilename,
-                               sfilename,
-                               iargs,
-                               savePath);
+                        .arg(FFMPEG_PATH)
+                        .arg(vfilename)
+                        .arg(sfilename)
+                        .arg(iargs)
+                        .arg(savePath);
 
                 _videoFile->close();
                 _soundFile->close();
             }
-            else if (_videoNetworkReply != NULL && _soundNetworkReply == NULL)
+            else
             {
-                // This is a video service which supports one stream
-                // containing both the video and the sound stream.
+                QString filename = "";
 
-                QString vfilename = _videoFile->fileName();
 
-                if (_download.convertExtension.isEmpty() == false)
+                if (_soundNetworkReply != NULL)
                 {
-                    QString args = "%1 -i \"%2\" -acodec copy %3 \"%4\"";
-                    command = QString(args)
-                              .arg(FFMPEG_PATH,
-                                   vfilename,
-                                   iargs,
-                                   savePath);
+                    // Video service which separates sound and video stream.
+                    // Only the sound was requested as only the sound stream
+                    // has been downloaded. We will convert it to the final
+                    // sound file.
+
+                    filename = _soundFile->fileName();
+
+                    _soundFile->close();
                 }
-            }
-            else if (_videoNetworkReply == NULL && _soundNetworkReply != NULL)
-            {
-                // Video service which separates sound and video streams.
-                // Only the sound stream has been downloaded, so the final file
-                // will be sound only.
+                else
+                {
+                    // Video service which provides on video stream containing
+                    // both the video and the sound streams. Call ffmpeg to
+                    // convert it (or extract sound) to the requested format.
 
+                    filename = _videoFile->fileName();
 
-            }
-
-            if (command.length() == 0)
-            {
-                QString sfilename = _soundFile->fileName();
+                    _videoFile->close();
+                }
 
                 command = QString("%1 -y -i \"%2\" %3 \"%4\"")
-                            .arg(FFMPEG_PATH,
-                                 sfilename,
-                                 iargs,
-                                 savePath);
-
-                _soundFile->close();
+                        .arg(FFMPEG_PATH)
+                        .arg(filename)
+                        .arg(iargs)
+                        .arg(savePath);
             }
 
 
             _convertPid = Tasks->enqueue(command);
 
+
             setStatus(Converting);
             setProgress(0, 0, 100);
+
 
             goto Cleanup;
         }
@@ -461,9 +459,10 @@ ErrorProcedure:
     {
         _retryCount++;
 
-        qDebug() << QString("Processor had an error connection. Retrying for %1 time in %2 ms")
-                    .arg(QString::number(_retryCount))
-                    .arg(QString::number(RETRY_INTERVAL));
+        qDebug() << QString("Processor had an error connection. \
+                            Retrying for %1 time in %2 ms")
+                            .arg(QString::number(_retryCount))
+                            .arg(QString::number(RETRY_INTERVAL));
 
         QTimer *timer = new QTimer();
 
@@ -479,8 +478,9 @@ ErrorProcedure:
     }
     else
     {
-        qDebug() << QString("Processor had an error connection. Max retries of %1 reached")
-                    .arg(MAX_RETRIES);
+        qDebug() << QString("Processor had an error connection. \
+                            Max retries of %1 reached")
+                            .arg(MAX_RETRIES);
 
         setStatus(ErrorConnection);
         setProgress(0, 0, 0);
@@ -869,13 +869,13 @@ Downloader::setProgress(qint64 eta, qint64 speed, qint64 percent)
 bool
 Downloader::isVideoMode()
 {
-    return _download.convertExtension == "mp4";
+    return _download.outputFormat.isVideo;
 }
 
 
 
 bool
-Downloader::isVideoValid()
+Downloader::isDownloadValid()
 {
     bool titleOK = true,
          videoUrlOK = true,
