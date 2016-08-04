@@ -36,10 +36,13 @@
 #include <QWidget>
 #include <QList>
 #include <QClipboard>
+#include <QMap>
 #include "core/url_processor.h"
 #include "core/download.h"
 #include "core/downloader.h"
 #include "core/downloader_stats.h"
+#include "core/downloader_progress.h"
+#include "core/queue_processor.h"
 #include "progress_item_delegate.h"
 
 
@@ -59,21 +62,25 @@ private:
     Ui::MainForm *ui;
     ProgressItemDelegate _progressItemDelegate;
     QStandardItemModel _downloadsModel;
-    QList<Downloader*> _processors;
+    //QList<Downloader*> _processors;
     QList<QString> _registeredUrls;
     UrlProcessor _parser;
+    QueueProcessor _processor;
+    QMap<int, int> _idToRowIndex;
 
 
     DownloaderStats getProcessorStats();
     void registerAndParseUrl(QString url);
-    void doDownloadsFinished();
     void applyCurrentMode();
     void processDownloads();
 
 
 private slots:
     void onParserFinished(QList<Download> downloads);
-    void onProcessorStatusChanged();
+    void onDownloadStatusChanged(int id, Downloader::Status status);
+    void onDownloadProgressChanged(int id, DownloaderProgress progress);
+    void onDownloadsStarted();
+    void onDownloadsFinished();
     void onDownloadClicked();
     void onStartClicked();
     void onStopClicked();

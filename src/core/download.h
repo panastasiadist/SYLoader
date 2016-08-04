@@ -47,12 +47,13 @@ struct Download
     QString artist;
     QString title;
     QString coartist;
-    QString savefile;
-    QStandardItem *titleItem;
-    QStandardItem *statusItem;
-    QStandardItem *progressItem;
-    QStandardItem *speedItem;
-    QStandardItem *etaItem;
+    QString filename;
+    //QString savefile;
+    //QStandardItem *titleItem;
+    //QStandardItem *statusItem;
+    //QStandardItem *progressItem;
+    //QStandardItem *speedItem;
+    //QStandardItem *etaItem;
 
 };
 

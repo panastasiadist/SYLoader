@@ -35,6 +35,7 @@
 
 #include "download.h"
 #include "task_processor.h"
+#include "downloader_progress.h"
 #include <QObject>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
@@ -59,17 +60,17 @@ public:
         ErrorConnection
     };
 
-
-
     Downloader(Download download, QString savePath);
     ~Downloader();
 
     void start();
     void stop();
     void reset();
+    void report();
 
-    Download *getDownload();
     Status getStatus();
+    Download *getDownload();
+    DownloaderProgress getProgress();
 
 
 private:
@@ -90,29 +91,33 @@ private:
     qint64 _soundBytes;
     qint64 _videoBytesReceived;
     qint64 _soundBytesReceived;
+    qint64 _eta;
+    qint64 _kbps;
+    qint64 _percent;
     int _convertPid;
     int _retryCount;
     bool _cancelationPending;
 
-    QString getOutputPath(const QString &title, const QString &extension);
+    QString getOutputPath(QString title, QString extension);
     QString getConversionExtension();
-    void setDisplay(Status status, qint64 eta, qint64 speed, qint64 progress);
 
     void download();
     bool redirect(QNetworkReply *reply);
-
     bool isVideoMode();
     bool isVideoValid();
+    void setStatus(Status status);
+    void setProgress(qint64 eta, qint64 speed, qint64 percent);
 
 signals:
     void statusChanged();
+    void progressChanged();
 
 private slots:
     void onDownloadSslErrors(const QList<QSslError> errors);
     void onTimerTimeout();
     void onDownloadFinished();
     void onDownloadReadyRead();
-    void onStatusChanged(TaskProcessor::Status status, int pid, int exitCode);
+    void onTaskStatusChanged(TaskProcessor::Status status, int pid, int exitCode);
     void onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal);
 };
 

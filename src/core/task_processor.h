@@ -41,6 +41,7 @@
 class TaskProcessor : public QObject
 {
     Q_OBJECT
+
 public:
     enum Status {
         Started,

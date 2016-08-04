@@ -106,10 +106,13 @@ void
 TaskProcessor::onCompleted(int exitCode)
 {
     QProcess *p = qobject_cast<QProcess*>(QObject::sender());
+
     int pid = _processes.value(p);
+
     _processes.remove(p);
     _commands.remove(pid);
     p->deleteLater();
+
     emit statusChanged(Finished, pid, exitCode);
 
     process();
@@ -132,6 +135,7 @@ TaskProcessor::process()
     for (int i = 0; i < remaining; i++)
     {
         int pid = _queue.dequeue();
+
         QString command = _commands.value(pid);
         QProcess *process = new QProcess();
 

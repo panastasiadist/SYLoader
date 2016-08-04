@@ -25,7 +25,8 @@ SOURCES += main.cpp\
     main_window.cpp \
     settings_form.cpp \
     progress_item_delegate.cpp \
-    about_form.cpp
+    about_form.cpp \
+    core/queue_processor.cpp
 
 HEADERS  += \
     core/download.h \
@@ -44,7 +45,9 @@ HEADERS  += \
     settings_form.h \
     main_window.h \
     main_form.h \
-    about_form.h
+    about_form.h \
+    core/queue_processor.h \
+    core/downloader_progress.h
 
 FORMS    += \
     about_form.ui \

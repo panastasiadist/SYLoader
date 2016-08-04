@@ -87,6 +87,29 @@ MainForm::MainForm(QWidget *parent) :
             this,
             SLOT(onParserFinished(QList<Download>)));
 
+    connect(&_processor,
+            SIGNAL(downloadsStarted()),
+            this,
+            SLOT(onDownloadsStarted()));
+
+    connect(&_processor,
+            SIGNAL(downloadsFinished()),
+            this,
+            SLOT(onDownloadsFinished()));
+
+    connect(&_processor,
+            SIGNAL(downloadStatusChanged(int, Downloader::Status)),
+            this,
+            SLOT(onDownloadStatusChanged(int, Downloader::Status)));
+
+    connect(&_processor,
+            SIGNAL(downloadProgressChanged(int, DownloaderProgress)),
+            this,
+            SLOT(onDownloadProgressChanged(int, DownloaderProgress)));
+
+    _processor.setAutoProcessing(false);
+    _processor.setSavepath(Settings->value("download_path").toString());
+    _processor.setConcurrentDownloads(Settings->value("sim_downloads").toInt());
 
     _downloadsModel.setHorizontalHeaderItem(0, new QStandardItem(tr("Title")));
     _downloadsModel.setHorizontalHeaderItem(1, new QStandardItem(tr("Status")));
@@ -129,14 +152,10 @@ MainForm::MainForm(QWidget *parent) :
 
 MainForm::~MainForm()
 {
-    foreach (Downloader *processor, _processors){
-        processor->deleteLater();
-    }
+    _processor.clear();
 
     delete ui;
 }
-
-
 
 
 
@@ -146,8 +165,6 @@ MainForm::onModeCurrentIndexChanged(int)
     Settings->setValue("download_mode", ui->cbxMode->currentIndex());
     applyCurrentMode();
 }
-
-
 
 
 
@@ -161,6 +178,7 @@ MainForm::onClipboardChanged(QClipboard::Mode mode)
         if (_parser.isSupported(url))
         {
             QString c = _parser.canonicalizeUrl(url);
+
             if (_registeredUrls.contains(c) == false) {
                 registerAndParseUrl(c);
             }
@@ -170,54 +188,43 @@ MainForm::onClipboardChanged(QClipboard::Mode mode)
 
 
 
-
-
 void
 MainForm::onStartClicked()
 {
-    QModelIndexList indexes = ui
-                                ->tvwDownloads
+    QModelIndexList indexes = ui->tvwDownloads
                                 ->selectionModel()
                                 ->selection().indexes();
 
-    for (int index = 0; index < indexes.count(); index++)
+    int rowIndex = indexes.at(0).row();
+    int downloadId = _idToRowIndex.key(rowIndex);
+
+    Downloader::Status status = _processor.getDownloader(downloadId)
+            ->getStatus();
+
+    if (status == Downloader::Complete)
     {
-        QModelIndex modelIndex = indexes.at(index);
-        foreach (Downloader *processor, _processors)
+        QMessageBox::information(
+            this,
+            tr("Information"),
+            tr("Hooray! This download is already complete!")
+        );
+    }
+    else
+    {
+        if (status != Downloader::Downloading &&
+            status != Downloader::Converting) {
+            _processor.start(downloadId);
+        }
+        else
         {
-            if (processor->getDownload()->titleItem ==
-                _downloadsModel.item(modelIndex.row(), 0))
-            {
-                Downloader::Status status = processor->getStatus();
-
-                if (status == Downloader::Complete)
-                {
-                    QMessageBox::information(
-                        this,
-                        tr("Information"),
-                        tr("Hooray! This download is already complete!")
-                    );
-                }
-
-                if (status != Downloader::Downloading &&
-                    status != Downloader::Converting) {
-                    processor->start();
-                }
-                else
-                {
-                    QMessageBox::information(
-                        this,
-                        tr("Information"),
-                        tr("This download is already in progress.")
-                    );
-                }
-                return;
-            }
+            QMessageBox::information(
+                this,
+                tr("Information"),
+                tr("This download is already in progress.")
+            );
         }
     }
 }
-
-
 
 
 
@@ -229,71 +236,37 @@ MainForm::onStopClicked()
                                 ->selectionModel()
                                 ->selection().indexes();
 
+    int rowIndex = indexes.at(0).row();
+    int downloadId = _idToRowIndex.key(rowIndex);
 
+    Downloader::Status status = _processor.getDownloader(downloadId)
+            ->getStatus();
 
-    for (int index = 0; index < indexes.count(); index++)
+    if (status == Downloader::Downloading ||
+        status == Downloader::Converting) {
+        _processor.stop(downloadId);
+    }
+    else
     {
-        QModelIndex modelIndex = indexes.at(index);
-
-        foreach (Downloader *processor, _processors)
-        {
-            if (processor->getDownload()->titleItem ==
-                _downloadsModel.item(modelIndex.row(), 0))
-            {
-                Downloader::Status status = processor->getStatus();
-                if (status == Downloader::Downloading ||
-                    status == Downloader::Converting) {
-                    processor->stop();
-                }
-                else
-                {
-                    QMessageBox::information(
-                        this,
-                        tr("Information"),
-                        tr("This download is not currently in progress."));
-                }
-                return;
-            }
-        }
+        QMessageBox::information(
+            this,
+            tr("Information"),
+            tr("This download is not currently in progress."));
     }
 }
-
-
 
 
 
 void
 MainForm::onDownloadClicked()
 {
-    DownloaderStats stats = getProcessorStats();
-
     // If downloads in progress, then the button is used as a cancel button.
-    if (stats.downloading + stats.converting > 0)
-    {
-        foreach (Downloader *processor, _processors) {
-            Downloader::Status status = processor->getStatus();
-            if (status == Downloader::Ready ||
-                status == Downloader::Downloading ||
-                status == Downloader::Converting) {
-                processor->stop();
-            }
-        }
+    if (_processor.running()) {
+        _processor.stopAll();
+    } else {
+        _processor.process();
     }
-    else
-    {
-        foreach (Downloader *p, _processors)
-        {
-            Downloader::Status status = p->getStatus();
-            if (status != Downloader::Complete && status != Downloader::Ready) {
-                p->reset();
-            }
-        }
-        processDownloads();
-    }
-
 }
-
-
 
 
 
@@ -305,37 +278,27 @@ MainForm::onDeleteClicked()
                                 ->selectionModel()
                                 ->selection().indexes();
 
+    int rowIndex = indexes.at(0).row();
+    int downloadId = _idToRowIndex.key(rowIndex);
 
-    for (int index = 0; index < indexes.count(); index++)
+    Downloader *downloader = _processor.getDownloader(downloadId);
+    Download *download = downloader->getDownload();
+    Downloader::Status status = downloader->getStatus();
+
+    if (status != Downloader::Downloading &&
+        status != Downloader::Converting)
     {
-        QModelIndex modelIndex = indexes.at(index);
-
-        foreach (Downloader *processor, _processors)
-        {
-            Download* download = processor->getDownload();
-            if (download->titleItem == _downloadsModel.item(modelIndex.row(), 0))
-            {
-                Downloader::Status status = processor->getStatus();
-                if (status != Downloader::Downloading &&
-                    status != Downloader::Converting)
-                {
-                    processor->disconnect();
-                    _processors.removeOne(processor);
-                    _registeredUrls.removeOne(download->normalUrl);
-                    _downloadsModel.removeRow(modelIndex.row());
-                    processor->deleteLater();
-                }
-                else
-                {
-                    QMessageBox::information(
-                        this,
-                        tr("Information"),
-                        tr("This download is in progress. Please cancel it first.")
-                    );
-                }
-                return;
-            }
-        }
+        _processor.remove(downloadId);
+        _registeredUrls.removeOne(download->normalUrl);
+        _downloadsModel.removeRow(rowIndex);
+    }
+    else
+    {
+        QMessageBox::information(
+            this,
+            tr("Information"),
+            tr("This download is in progress. Please cancel it first.")
+        );
     }
 
     if (_downloadsModel.rowCount() == 0) {
@@ -345,25 +308,10 @@ MainForm::onDeleteClicked()
 
 
 
-
-
 void
 MainForm::onClearClicked()
 {
-    bool downloading = false;
-
-    foreach (Downloader *processor, _processors)
-    {
-        Downloader::Status status = processor->getStatus();
-        if (status == Downloader::Downloading ||
-            status == Downloader::Converting)
-        {
-            downloading = true;
-            break;
-        }
-    }
-
-    if (downloading)
+    if (_processor.running())
     {
         QMessageBox::information(
             this,
@@ -373,14 +321,9 @@ MainForm::onClearClicked()
         return;
     }
 
-    foreach (Downloader *processor, _processors)
-    {
-        processor->disconnect();
-        processor->deleteLater();
-    }
-
-    _processors.clear();
+    _processor.clear();
     _registeredUrls.clear();
+    _idToRowIndex.clear();
     _downloadsModel.removeRows(0, _downloadsModel.rowCount());
 
     ui->btnDownload->setEnabled(false);
@@ -388,148 +331,85 @@ MainForm::onClearClicked()
 
 
 
-
-
-/**
- * @brief SLOT. Runs when a processor reports a new status.
- * We take appropriate action according to reported status.
- */
-void MainForm::onProcessorStatusChanged()
+void
+MainForm::onDownloadStatusChanged(int id, Downloader::Status status)
 {
-    Downloader *processor = qobject_cast<Downloader*>(QObject::sender());
-    Downloader::Status status = processor->getStatus();
+    QString statusStr = "";
 
-    if (status == Downloader::ErrorConnection ||
-        status == Downloader::ErrorIO ||
-        status == Downloader::Complete ||
-        status == Downloader::Converting ||
-        status == Downloader::Canceled)
+    int rowIndex = _idToRowIndex.value(id);
+
+    switch (status)
     {
-        DownloaderStats stats = getProcessorStats();
-        int run = stats.canceled + stats.completed + stats.errored;
+        case Downloader::Ready:
+            statusStr = tr("Queued");
+            break;
+        case Downloader::Downloading:
+            statusStr = tr("Downloading");
+            break;
+        case Downloader::Converting:
+            statusStr = tr("Converting");
+            break;
+        case Downloader::Complete:
+            statusStr = tr("Complete");
+            break;
+        case Downloader::ErrorIO:
+            statusStr = tr("I/O Error");
+            break;
+        case Downloader::ErrorConnection:
+            statusStr = tr("Connection Error");
+            break;
+        case Downloader::Canceled:
+            statusStr = tr("Canceled");
+            break;
+    }
 
-        if (run == _processors.count()) {
-            doDownloadsFinished();
-        } else {
-            processDownloads();
+    _downloadsModel.item(rowIndex, 1)->setText(statusStr);
+
+    if (status != Downloader::Ready && status != Downloader::Downloading)
+    {
+        if (Settings->value("autostart") == true) {
+            _processor.process();
         }
     }
-    else
-    {
-        // Downloading (Ready is never signaled)
-        ui->btnDownload->setText(tr("Cancel"));
-    }
 }
 
 
 
-
-
-/**
- * @brief
- * SLOT. Runs when the parser has finished fetching information about a video.
- */
 void
-MainForm::onParserFinished(QList<Download> downloads)
+MainForm::onDownloadProgressChanged(int id, DownloaderProgress progress)
 {
-    int count = downloads.length();
-    QString path = Settings->value("download_path").toString();
+    int rowIndex = _idToRowIndex.value(id);
 
-    foreach (Download d, downloads)
-    {
-        QList<QStandardItem *> list;
-        list << new QStandardItem(d.videoTitle);
-        list << new QStandardItem("");
-        list << new QStandardItem("");
-        list << new QStandardItem("");
-        list << new QStandardItem("");
+    int kbps = progress.kbps;
+    int minutes = progress.seconds / 60;
+    int seconds = progress.seconds % 60;
+    int percent = progress.percent;
 
-        list.at(0)->setEditable(false);
-        list.at(1)->setEditable(false);
-        list.at(2)->setEditable(false);
-        list.at(3)->setEditable(false);
-        list.at(4)->setEditable(false);
+    QString speedStr = QString("%1 KB/s").arg(kbps);
+    QString percentStr = QString::number(percent);
+    QString remainingStr = QString("%1m %2s").arg(minutes).arg(seconds);
 
-
-        /* These properties are needed in order for the processor to be able to
-         * set the status fields of each download.
-         */
-        d.titleItem = list.at(0);
-        d.statusItem = list.at(1);
-        d.progressItem = list.at(2);
-        d.speedItem = list.at(3);
-        d.etaItem = list.at(4);
-
-
-
-        _downloadsModel.appendRow(list);
-
-        if (count > 1)
-        {
-            /* The parser returned multiple downloads for one url.
-             * This is a playlist.
-             * We should register the canonicalized version each video's url
-             * so the user can't reenter it for downloading.
-             */
-            _registeredUrls.append(_parser.canonicalizeUrl(d.normalUrl));
-        }
-
-
-        Downloader *p = new Downloader(d, path);
-
-        connect(p,
-                SIGNAL(statusChanged()),
-                this,
-                SLOT(onProcessorStatusChanged()));
-
-        _processors.append(p);
-
-        ui->btnDownload->setEnabled(true);
-    }
-
-
-    // New processors have been added. Set their mode.
-    applyCurrentMode();
-
-
-    // If autostart is enabled, try starting the new downloads
-    if (Settings->value("autostart") == true)
-        processDownloads();
-
-
-    /* If there aren't parsers working at the moment, then we should update UI
-     * accordingly. */
-    if (!_parser.parsing()) {
-        MessageBus->send("parsing_finished");
-    }
-
+    _downloadsModel.item(rowIndex, 2)->setText(percentStr);
+    _downloadsModel.item(rowIndex, 3)->setText(speedStr);
+    _downloadsModel.item(rowIndex, 4)->setText(remainingStr);
 }
 
 
 
 void
-MainForm::applyCurrentMode()
+MainForm::onDownloadsStarted()
 {
-    // If index == 0, then the user want to keep the sound of the video
-    // The processor will convert the downloaded sound stream to mp3.
-    // Otherwise specify no conversion extension.
-    // The processor will keep the downloaded video intact.
-    QString ext = ui->cbxMode->currentIndex() == 0 ? "mp3" : "";
-    foreach (Downloader *processor, _processors) {
-        processor->getDownload()->convertExtension = ext;
-    }
+    ui->btnDownload->setText(tr("Cancel"));
 }
 
 
 
-
-
 void
-MainForm::doDownloadsFinished()
+MainForm::onDownloadsFinished()
 {
     QList<Downloader::Status> statuses;
 
-    foreach (Downloader *processor, _processors) {
+    foreach (Downloader *processor, _processor.getDownloaders()) {
         statuses.append(processor->getStatus());
     }
 
@@ -538,7 +418,7 @@ MainForm::doDownloadsFinished()
 
     MessageBus->send("downloading_finished");
 
-    if (statuses.count() > 0)
+    /*if (statuses.count() > 0)
     {
         if (statuses.contains(Downloader::ErrorConnection))
         {
@@ -555,6 +435,84 @@ MainForm::doDownloadsFinished()
             QString msg = tr("Hooray! Your downloads have been completed.");
             QMessageBox::information(this, tr("Information"), msg);
         }
+    }*/
+}
+
+
+
+void
+MainForm::onParserFinished(QList<Download> downloads)
+{
+    int count = downloads.length();
+
+
+    foreach (Download d, downloads)
+    {
+        QList<QStandardItem *> list;
+        list << new QStandardItem(d.videoTitle);
+        list << new QStandardItem("");
+        list << new QStandardItem("");
+        list << new QStandardItem("");
+        list << new QStandardItem("");
+
+        list.at(0)->setEditable(false);
+        list.at(1)->setEditable(false);
+        list.at(2)->setEditable(false);
+        list.at(3)->setEditable(false);
+        list.at(4)->setEditable(false);
+
+        _downloadsModel.appendRow(list);
+
+        if (count > 1)
+        {
+            // The parser returned multiple downloads for one url.
+            // This is a playlist. We should register the canonicalized version
+            // each video's url so the user can't reenter it for downloading.
+            _registeredUrls.append(_parser.canonicalizeUrl(d.normalUrl));
+        }
+
+        int id = _processor.enqueue(d);
+        _idToRowIndex.insert(id, _downloadsModel.rowCount() - 1);
+
+        // Call the downloader to report its initial status and progress values.
+        _processor.getDownloader(id)->report();
+
+        ui->btnDownload->setEnabled(true);
+    }
+
+    // New downloads have been added. Set their mode.
+    applyCurrentMode();
+
+    _processor.setConcurrentDownloads(Settings->value("sim_downloads").toInt());
+
+    // If autostart is enabled, try starting the new downloads
+    if (Settings->value("autostart") == true) {
+        _processor.process();
+    }
+
+    // If there aren't parsers working at the moment, then we should update UI
+    // accordingly.
+    if (!_parser.parsing()) {
+        MessageBus->send("parsing_finished");
+    }
+}
+
+
+
+void
+MainForm::applyCurrentMode()
+{
+    // If index == 0, then the user want to keep the sound of the video
+    // The processor will convert the downloaded sound stream to mp3.
+    // Otherwise specify no conversion extension.
+    // The processor will keep the downloaded video intact.
+
+    QString ext = ui->cbxMode->currentIndex() == 0 ? "mp3" : "";
+    foreach (int downloadId, _idToRowIndex.keys())
+    {
+        _processor.getDownloader(downloadId)
+                ->getDownload()
+                ->convertExtension = ext;
     }
 }
 
@@ -568,101 +526,4 @@ MainForm::registerAndParseUrl(QString url)
     _registeredUrls.append(url);
 
     _parser.parse(url);
-}
-
-
-
-DownloaderStats
-MainForm::getProcessorStats()
-{
-    DownloaderStats stats;
-    stats.canceled = 0;
-    stats.completed = 0;
-    stats.converting = 0;
-    stats.downloading = 0;
-    stats.errored = 0;
-    stats.ready = 0;
-
-    foreach (Downloader *processor, _processors)
-    {
-        Downloader::Status status = processor->getStatus();
-        switch (status)
-        {
-            case Downloader::Ready:
-                stats.ready++;
-                break;
-            case Downloader::Downloading:
-                stats.downloading++;
-                break;
-            case Downloader::Converting:
-                stats.converting++;
-                break;
-            case Downloader::Complete:
-                stats.completed++;
-                break;
-            case Downloader::Canceled:
-                stats.canceled++;
-                break;
-            case Downloader::ErrorConnection:
-            case Downloader::ErrorIO:
-                stats.errored++;
-        }
-    }
-
-    return stats;
-}
-
-
-
-
-
-void
-MainForm::processDownloads()
-{
-    DownloaderStats stats = getProcessorStats();
-    int downloading = stats.downloading;
-    int ready = stats.ready;
-
-
-    // No processors currently run, now starting.
-    if (ready == _processors.length()) {
-        ui->cbxMode->setDisabled(true);
-        MessageBus->send("downloading_started");
-    }
-
-
-    /* We will start a new download as soon as a processor has finished
-     * downloading taking into account the maximum number of concurrent
-     * downloads the user has set.
-     */
-    if (ready > 0)
-    {
-        int simDownloads = Settings->value("sim_downloads").toInt();
-        int availableSlots = simDownloads - downloading;
-        int newDownloadSlots = 0;
-
-        /* It may be less than zero if the user has decreased concurrent
-         * downloads while downloading has started
-         */
-        if (availableSlots <= 0)
-            return;
-
-        if (availableSlots >= ready) {
-            newDownloadSlots = ready;
-        } else {
-            newDownloadSlots = availableSlots;
-        }
-
-        foreach (Downloader *processor, _processors)
-        {
-            if (processor->getStatus() == Downloader::Ready)
-            {
-                processor->start();
-                newDownloadSlots--;
-            }
-
-            if (newDownloadSlots == 0)
-                break;
-        }
-    }
 }

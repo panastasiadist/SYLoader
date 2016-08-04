@@ -34,6 +34,7 @@
 #include "downloader.h"
 #include "global.h"
 #include "utility.h"
+#include "downloader_progress.h"
 #include <math.h>
 #include <QDir>
 #include <QTemporaryFile>
@@ -59,13 +60,14 @@ Downloader::Downloader(Download d, QString savePath)
     _videoNetworkReply = NULL;
     _soundFile = NULL;
     _videoFile = NULL;
-
-    reset();
+    _convertPid = 0;
 
     connect(Tasks,
             SIGNAL(statusChanged(TaskProcessor::Status, int, int)),
             this,
-            SLOT(onStatusChanged(TaskProcessor::Status, int, int)));
+            SLOT(onTaskStatusChanged(TaskProcessor::Status, int, int)));
+
+    reset();
 
     if (isVideoValid())
     {
@@ -75,7 +77,6 @@ Downloader::Downloader(Download d, QString savePath)
     else
     {
         qDebug() << QString("Processor stopped on an A/S Error");
-        d.statusItem->setText(tr("A/S Error"));
     }
 }
 
@@ -95,8 +96,6 @@ Downloader::start()
     if (!isVideoValid()) {
         return;
     }
-
-    reset();
 
     if (_status == Ready) {
         download();
@@ -135,7 +134,6 @@ Downloader::stop()
             _videoNetworkReply->abort();
         }
 
-        _status = Canceled;
     }
     else if (_status == Converting)
     {
@@ -143,18 +141,15 @@ Downloader::stop()
         // Because we have set cancelation pending, the termination process will
         // not raise an IO Error.
         Tasks->abort(_convertPid);
-
-        _status = Canceled;
     }
     else if (_status == Ready)
     {
         // If the processor hasn't run yet, just mark it as canceled
-        _status = Canceled;
     }
 
-    setDisplay(Canceled, 0, 0, 0);
-    emit statusChanged();
 
+    setStatus(Canceled);
+    setProgress(0, 0, 0);
 }
 
 
@@ -164,7 +159,6 @@ Downloader::reset()
 {
     QString filename = "";
 
-
     _videoBytes = 0;
     _soundBytes = 0;
     _bytesTotal = 0;
@@ -172,13 +166,15 @@ Downloader::reset()
     _videoBytesReceived = 0;
     _soundBytesReceived = 0;
     _lastBytesDownloaded = 0;
+    _eta = 0;
+    _kbps = 0;
+    _percent = 0;
     _cancelationPending = false;
-
+    _convertPid = 0;
 
     bool hasArtist = !_download.artist.isEmpty();
     bool hasTitle = !_download.title.isEmpty();
     bool hasCoartist = !_download.coartist.isEmpty();
-
 
     if (hasArtist && hasTitle)
     {
@@ -194,38 +190,34 @@ Downloader::reset()
         filename = _download.videoTitle;
     }
 
+    _download.filename = filename;
 
-    QString extension = "";
-    if (isVideoMode()) {
-        extension = _download.videoExtension;
-    } else {
-        extension = _download.convertExtension;
-    }
-
-
+    QString extension = _download.convertExtension;
     QString savePath = getOutputPath(filename, extension);
-    _download.savefile = savePath;
-
 
     if (QFile::exists(savePath))
     {
-        _status = Complete;
-        _download.statusItem->setText(tr("Already Downloaded"));
-        setDisplay(Complete, 0, 0, 100);
+        setStatus(Complete);
+        setProgress(0, 0, 100);
     }
     else
     {
-        _status = Ready;
-        setDisplay(Ready, 0, 0, 0);
+        setStatus(Ready);
+        setProgress(0, 0, 0);
     }
+}
 
+
+void
+Downloader::report()
+{
     emit statusChanged();
+    emit progressChanged();
 }
 
 
 
-Download*
-Downloader::getDownload()
+Download *Downloader::getDownload()
 {
     return &_download;
 }
@@ -236,6 +228,20 @@ Downloader::Status
 Downloader::getStatus()
 {
     return _status;
+}
+
+
+
+DownloaderProgress
+Downloader::getProgress()
+{
+    DownloaderProgress progress;
+
+    progress.kbps = _kbps;
+    progress.percent = _percent;
+    progress.seconds = _eta;
+
+    return progress;
 }
 
 
@@ -353,6 +359,13 @@ Downloader::onDownloadFinished()
 
             QString command;
 
+            QString filename = _download.filename;
+            QString extension = _download.convertExtension;
+            QString savePath = getOutputPath(filename, extension);
+
+            // Video service which separates sound and video stream.
+            // The video was requested as both streams have been downloaded.
+            // We will merge them into the final video file.
             if (_videoNetworkReply != NULL && _soundNetworkReply != NULL)
             {
                 QString vfilename = _videoFile->fileName(),
@@ -364,13 +377,16 @@ Downloader::onDownloadFinished()
                                vfilename,
                                sfilename,
                                iargs,
-                               _download.savefile);
+                               savePath);
 
                 _videoFile->close();
                 _soundFile->close();
             }
             else if (_videoNetworkReply != NULL && _soundNetworkReply == NULL)
             {
+                // This is a video service which supports one stream
+                // containing both the video and the sound stream.
+
                 QString vfilename = _videoFile->fileName();
 
                 if (_download.convertExtension.isEmpty() == false)
@@ -380,8 +396,16 @@ Downloader::onDownloadFinished()
                               .arg(FFMPEG_PATH,
                                    vfilename,
                                    iargs,
-                                   _download.savefile);
+                                   savePath);
                 }
+            }
+            else if (_videoNetworkReply == NULL && _soundNetworkReply != NULL)
+            {
+                // Video service which separates sound and video streams.
+                // Only the sound stream has been downloaded, so the final file
+                // will be sound only.
+
+
             }
 
             if (command.length() == 0)
@@ -392,18 +416,17 @@ Downloader::onDownloadFinished()
                             .arg(FFMPEG_PATH,
                                  sfilename,
                                  iargs,
-                                 _download.savefile);
+                                 savePath);
 
                 _soundFile->close();
             }
 
 
             _convertPid = Tasks->enqueue(command);
-            _status = Converting;
 
-            setDisplay(Converting, 0, 0, 100);
+            setStatus(Converting);
+            setProgress(0, 0, 100);
 
-            emit statusChanged();
             goto Cleanup;
         }
     }
@@ -425,11 +448,13 @@ Downloader::onDownloadFinished()
 ErrorProcedure:
 
     // If at least one downloader has errored, stop the other.
-    if (videoError && _soundNetworkReply != NULL)
+    if (videoError && _soundNetworkReply != NULL) {
         _soundNetworkReply->abort();
+    }
 
-    if (soundError && _videoNetworkReply != NULL)
+    if (soundError && _videoNetworkReply != NULL) {
         _videoNetworkReply->abort();
+    }
 
 
     if (_retryCount < MAX_RETRIES)
@@ -437,8 +462,8 @@ ErrorProcedure:
         _retryCount++;
 
         qDebug() << QString("Processor had an error connection. Retrying for %1 time in %2 ms")
-                    .arg(QString::number(_retryCount),
-                         QString::number(RETRY_INTERVAL));
+                    .arg(QString::number(_retryCount))
+                    .arg(QString::number(RETRY_INTERVAL));
 
         QTimer *timer = new QTimer();
 
@@ -457,11 +482,8 @@ ErrorProcedure:
         qDebug() << QString("Processor had an error connection. Max retries of %1 reached")
                     .arg(MAX_RETRIES);
 
-        _status = ErrorConnection;
-
-        setDisplay(ErrorConnection, 0, 0, 0);
-
-        emit statusChanged();
+        setStatus(ErrorConnection);
+        setProgress(0, 0, 0);
 
         goto Cleanup;
     }
@@ -501,7 +523,7 @@ Cleanup:
 
 
 void
-Downloader::onStatusChanged(TaskProcessor::Status status, int pid, int exitCode)
+Downloader::onTaskStatusChanged(TaskProcessor::Status status, int pid, int exitCode)
 {
     if (pid != _convertPid) {
         return;
@@ -509,9 +531,7 @@ Downloader::onStatusChanged(TaskProcessor::Status status, int pid, int exitCode)
 
     if (status == TaskProcessor::Started)
     {
-        _status = Converting;
-
-        setDisplay(Converting, 0, 0, 100);
+        setStatus(Converting);
 
         qDebug() << "Converter started";
     }
@@ -523,18 +543,17 @@ Downloader::onStatusChanged(TaskProcessor::Status status, int pid, int exitCode)
 
         if (exitCode == 0)
         {
-            _status = Complete;
+            setStatus(Complete);
         }
         else
         {
+            setStatus(ErrorIO);
+
             qDebug() << QString("Converter errored: %1").arg(exitCode);
-            _status = ErrorIO;
         }
     }
 
-    setDisplay(_status, 0, 0, 100);
-
-    emit statusChanged();
+    setProgress(0, 0, 100);
 }
 
 
@@ -580,14 +599,17 @@ Downloader::onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal)
         qint64 progress = _bytesDownloaded * 100 / _bytesTotal;
         qint64 bytesDiff = _bytesDownloaded - _lastBytesDownloaded;
         qint64 speed = bytesDiff / _speedElapsedTimer.elapsed();
-        if (speed == 0) return;
+
+        if (speed == 0) {
+            return;
+        }
 
         _lastBytesDownloaded = _bytesDownloaded;
         _speedElapsedTimer.restart();
 
         qint64 seconds = ((_bytesTotal - _bytesDownloaded) / 1024) / speed;
 
-        setDisplay(Downloading, seconds, speed, progress);
+        setProgress(seconds, speed, progress);
     }
 
 }
@@ -688,7 +710,7 @@ Downloader::download()
 
 
     if ((_soundNetworkReply == NULL) ||
-         _soundNetworkReply != NULL && isVideoMode())
+        (_soundNetworkReply != NULL && isVideoMode()))
     {
         _videoFile = new QTemporaryFile();
         _videoFile->setAutoRemove(false);
@@ -725,11 +747,8 @@ Downloader::download()
     }
 
 
-    _status = Downloading;
-
-    setDisplay(Downloading, 0, 0, 0);
-
-    emit statusChanged();
+    setStatus(Downloading);
+    setProgress(0, 0, 0);
 }
 
 
@@ -811,7 +830,7 @@ Downloader::redirect(QNetworkReply *reply)
 
 
 QString
-Downloader::getOutputPath(const QString &title, const QString &extension)
+Downloader::getOutputPath(QString title, QString extension)
 {
     QString separator = QDir::separator(),
             cleanFilename = Utility::cleanFilename(title),
@@ -826,74 +845,23 @@ Downloader::getOutputPath(const QString &title, const QString &extension)
 
 
 void
-Downloader::setDisplay(Status status, qint64 eta, qint64 speed, qint64 progress)
+Downloader::setStatus(Downloader::Status status)
 {
-    QString s = "";
+    _status = status;
 
-    switch (status)
-    {
-        case Ready:
-            s = tr("Queued");
-            break;
-        case Downloading:
-            s = tr("Downloading");
-            break;
-        case Converting:
-            s = tr("Converting");
-            break;
-        case Complete:
-            s = tr("Complete");
-            break;
-        case ErrorIO:
-            s = tr("I/O Error");
-            break;
-        case ErrorConnection:
-            s = tr("Connection Error");
-            break;
-        case Canceled:
-            s = tr("Canceled");
-            break;
-    }
-
-    _download.statusItem->setText(s);
+    emit statusChanged();
+}
 
 
-    if (eta != -1)
-    {
-        // eta is the estimated time of availability in seconds
-        int minutes = eta / 60;
 
-        QString remainingString;
-        if (eta <= 60) {
-            remainingString = QString("%1s").arg(QString::number(eta));
-        }
-        else
-        {
-            QString m = QString::number(minutes);
-            QString s = QString::number(eta - (minutes * 60));
-            remainingString = QString("%1m %2s").arg(m, s);
-        }
+void
+Downloader::setProgress(qint64 eta, qint64 speed, qint64 percent)
+{
+    _kbps = speed;
+    _percent = percent;
+    _eta = eta;
 
-        _download.etaItem->setText(remainingString);
-    }
-    else
-    {
-        _download.etaItem->setText(tr("N/A"));
-    }
-
-
-    if (speed != -1)
-    {
-        QString s = QString::number(speed);
-        _download.speedItem->setText(QString("%1 KB/s").arg(s));
-    }
-    else
-    {
-        _download.speedItem->setText(tr("N/A"));
-    }
-
-
-    _download.progressItem->setText(QString::number(progress));
+    emit progressChanged();
 }
 
 
@@ -901,7 +869,7 @@ Downloader::setDisplay(Status status, qint64 eta, qint64 speed, qint64 progress)
 bool
 Downloader::isVideoMode()
 {
-    return _download.convertExtension == "";
+    return _download.convertExtension == "mp4";
 }
 
 

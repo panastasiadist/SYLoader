@@ -158,6 +158,7 @@ YoutubeExtractor::onProcessFinished(int exitCode)
         QString videoTitle = eo.value("title").toString();
 
         Download download;
+
         download.normalUrl = eo.value("webpage_url").toString();
         download.videoTitle = videoTitle;
 
