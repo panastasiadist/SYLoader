@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2016 Panagiotis Anastasiadis
+ * Copyright 2015 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -29,7 +29,6 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
 #include "youtube_extractor.h"
 #include <QByteArray>
 #include <QJsonDocument>
@@ -275,7 +274,7 @@ YoutubeExtractor::onProcessFinished(int exitCode)
         downloads.append(download);
     }
 
-    emit finished(0, downloads);
+    emit finished(exitCode, downloads);
 
     return;
 }

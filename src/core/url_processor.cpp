@@ -149,18 +149,22 @@ void
 UrlProcessor::onExtractorFinished(int result, QList<Download> downloads)
 {
     Extractor* extractor = qobject_cast<Extractor*>(QObject::sender());
+
     extractor->deleteLater();
     _extractors.removeOne(extractor);
 
-    QList<Download> temp;
+    if (result == 0)
+    {
+        QList<Download> temp;
 
-    foreach(Download d, downloads) {
-        temp.append(Utility::decorateDownload(d));
+        foreach(Download d, downloads) {
+            temp.append(Utility::decorateDownload(d));
+        }
+
+        extractor->deleteLater();
+
+        emit parsed(temp);
     }
-
-    extractor->deleteLater();
-
-    emit parsed(temp);
 
     return;
 }

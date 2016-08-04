@@ -656,7 +656,12 @@ Downloader::onDownloadSslErrors(const QList<QSslError> errors)
 
     reply->ignoreSslErrors();
 
-    qDebug() << QString("SSL error on %1").arg(reply->url().toString());
+    foreach (QSslError error, errors)
+    {
+        qDebug() << QString("SSL Error on %1: %2")
+                    .arg(reply->url().toString())
+                    .arg(error.errorString());
+    }
 }
 
 

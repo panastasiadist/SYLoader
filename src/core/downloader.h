@@ -77,7 +77,6 @@ public:
 
 private:
     QString _savePath;
-    QNetworkAccessManager _gateway;
     QNetworkReply *_videoNetworkReply;
     QNetworkReply *_soundNetworkReply;
     QTemporaryFile *_soundFile;
