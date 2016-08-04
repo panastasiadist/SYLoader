@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -29,35 +29,31 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
 #ifndef DOWNLOAD_H
 #define DOWNLOAD_H
 
+
+
 #include <QStandardItem>
 #include "output_format.h"
+
+
 
 struct Download
 {
     QString normalUrl;
     QString videoUrl;
     QString soundUrl;
-    QString videoTitle;
-    QString videoExtension;
-    QString soundExtension;
-    //QString convertExtension;
     QString artist;
     QString title;
     QString coartist;
     QString filename;
+    QString videoTitle;
+    QString videoExtension;
+    QString soundExtension;
     OutputFormat outputFormat;
-    //QString savefile;
-    //QStandardItem *titleItem;
-    //QStandardItem *statusItem;
-    //QStandardItem *progressItem;
-    //QStandardItem *speedItem;
-    //QStandardItem *etaItem;
-
 };
+
 
 
 #endif // DOWNLOAD_H

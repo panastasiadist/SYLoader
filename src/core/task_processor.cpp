@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -30,9 +30,9 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
+
+
 #include "task_processor.h"
-
-
 
 
 
@@ -41,8 +41,6 @@ TaskProcessor::TaskProcessor()
     _pid = 0;
     _num = 0;
 }
-
-
 
 
 
@@ -84,11 +82,9 @@ TaskProcessor::abort(int pid)
 bool
 TaskProcessor::running(int pid)
 {
-    /* When the queue contains a pid, then the relevant process
-     * hasn't yet started.
-     * In addition, when a process finishes, its pid is removed
-     * from the queue
-     */
+    // When the queue contains a pid, then the relevant process hasn't started.
+    // In addition, when a process finishes, its pid is removed from the queue.
+
     return !_queue.contains(pid);
 }
 
@@ -111,6 +107,7 @@ TaskProcessor::onCompleted(int exitCode)
 
     _processes.remove(p);
     _commands.remove(pid);
+
     p->deleteLater();
 
     emit statusChanged(Finished, pid, exitCode);
@@ -120,17 +117,23 @@ TaskProcessor::onCompleted(int exitCode)
 
 
 
-
 void
 TaskProcessor::process()
 {
-    if (_queue.count() == 0)
+    if (_queue.count() == 0) {
         return;
+    }
 
-    // Current number of running processes
+    // Current number of running processes.
+
     int current = _processes.count();
+
+    // Processes remaining to run concurrently taking into account the number
+    // of already running processes.
+
     int remaining = _num - current;
 
+    // Attempt to run the next processes in the queue up to concurrency limit.
 
     for (int i = 0; i < remaining; i++)
     {
@@ -150,6 +153,5 @@ TaskProcessor::process()
 
         emit statusChanged(Started, pid, 0);
     }
-
 }
 

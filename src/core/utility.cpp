@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -30,10 +30,13 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
+
+
 #include "utility.h"
 #include <QRegExp>
 #include <QRegularExpression>
 #include <QTextStream>
+
 
 
 #ifdef _WIN32
@@ -45,31 +48,28 @@ LPFN_ISWOW64PROCESS fnIsWow64Process;
 
 
 
-
-
 bool
 Utility::is64Bit()
 {
     BOOL bIsWow64 = FALSE;
 
-    /* IsWow64Process is not available on all supported versions of Windows.
-     * Use GetModuleHandle to get a handle to the DLL that contains the function
-     * and GetProcAddress to get a pointer to the function if available.
-     */
+    // IsWow64Process is not available on all supported versions of Windows.
+    // Use GetModuleHandle to get a handle to the DLL that contains the function
+    // and GetProcAddress to get a pointer to the function if available.
+
     fnIsWow64Process = (LPFN_ISWOW64PROCESS) GetProcAddress(
         GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
 
     if(NULL != fnIsWow64Process)
     {
-        if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64)) {
+        if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64))
+        {
             return false;
         }
     }
 
     return bIsWow64;
 }
-
-
 
 
 
@@ -95,10 +95,12 @@ Utility::is64Bit()
     personality(PER_LINUX);
     uname(&unameStruct);
 
-    if (strcmp(unameStruct.machine, "x86_64") == 0) {
+    if (strcmp(unameStruct.machine, "x86_64") == 0)
+    {
         return true;
     }
-    else {
+    else
+    {
         return false;
     }
 }
@@ -114,6 +116,7 @@ Utility::cleanFilename(QString desiredFilename)
 #endif
 
 
+
 Download
 Utility::decorateDownload(Download download)
 {
@@ -121,27 +124,26 @@ Utility::decorateDownload(Download download)
     QString title = "";
     QString artist = "";
     QString coartist = "";
-
     QStringList titleparts = videoTitle.split("-");
 
     QRegularExpression featRegex("(feat\\.*|ft\\.*)");
     featRegex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
 
 
-    /* Most commonly a video's title has two parts
-     * Try analyzing of the following patterns:
-     * Artist feat. Coartist - Song
-     * Artist ft. Coartist - Song
-     * Artist - Song feat. Coartist
-     * Artist - Song ft. Coartist
-     */
+    // Most commonly a video's title has two parts
+    // Try analyzing of the following patterns:
+    // Artist feat. Coartist - Song
+    // Artist ft. Coartist - Song
+    // Artist - Song feat. Coartist
+    // Artist - Song ft. Coartist
+
     int tcount = titleparts.count();
     if (tcount > 1)
     {
         QString left = QString(titleparts.at(0)).trimmed();
         QString right = QString(titleparts.at(1)).trimmed();
-
         QStringList lparts = left.split(featRegex);
+
         if (lparts.count() == 2)
         {
             artist = QString(lparts.at(0)).trimmed();
@@ -151,6 +153,7 @@ Utility::decorateDownload(Download download)
         else
         {
             QStringList rparts = right.split(featRegex);
+
             if (rparts.count() == 2)
             {
                 title = QString(rparts.at(0)).trimmed();
@@ -164,12 +167,13 @@ Utility::decorateDownload(Download download)
             }
         }
 
-        /* If more than 2, the title has more than one -
-         * The first and second parts are already examined.
-         * Append any remaining parts to the title as a fallback
-         */
-        for (int i = 2; i < tcount; i++)
+        // If more than 2, the title has more than one dashes.
+        // The first and second parts are already examined.
+        // Append any remaining parts to the title as a fallback.
+
+        for (int i = 2; i < tcount; i++) {
             title += " " + titleparts.at(i);
+        }
     }
 
     download.title = title;

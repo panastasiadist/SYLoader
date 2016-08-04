@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -43,8 +43,6 @@
 
 
 
-
-
 AboutForm::AboutForm(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::AboutForm)
@@ -84,14 +82,10 @@ AboutForm::AboutForm(QWidget *parent) :
 
 
 
-
-
 AboutForm::~AboutForm()
 {
     delete ui;
 }
-
-
 
 
 
@@ -104,16 +98,12 @@ AboutForm::onContactClicked()
 
 
 
-
-
 void
 AboutForm::onHomepageClicked()
 {
     QDesktopServices services;
     services.openUrl(QUrl(HOMEPAGE_URL));
 }
-
-
 
 
 

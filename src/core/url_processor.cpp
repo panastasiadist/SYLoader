@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -68,6 +68,7 @@ UrlProcessor::parse(QString url)
     // supported by calling isSupported(). But if not then the returned
     // extractor will be null as there is no extractor supporting the url.
     // We perform a check in order to avoid abnormal termination of the program.
+
     if (extractor != NULL)
     {
         _extractors.append(extractor);

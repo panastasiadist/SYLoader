@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -30,8 +30,9 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#include "network_gateway.h"
 
+
+#include "network_gateway.h"
 
 // The maximum number of requests a manager will concurrently handle before
 // a new manager needs to be created for another set of connections.
@@ -60,22 +61,23 @@ NetworkGateway::~NetworkGateway()
 QNetworkReply*
 NetworkGateway::get(QNetworkRequest request)
 {
-    QNetworkReply*          reply;
-    QNetworkAccessManager*  manager;
-    int idx, count;
+    QNetworkReply* reply = NULL;
+    QNetworkAccessManager* manager;
+    int count = _managers.count();
 
-    reply = NULL;
-    count = _managers.count();
 
     // First search in current managers to find one which hasn't reached
     // MAX_CONNECTIONS of open connections. If one is found, use it for the
     // new request and increase its connection count by one.
+
+    int idx;
     for (idx = 0; idx < count; idx++)
     {
         NetworkGatewayManager item = _managers[idx];
-        manager = item.manager;
-        int connections = item.connections;
 
+        manager = item.manager;
+
+        int connections = item.connections;
         if (connections < MAX_CONNECTIONS)
         {
             _managers[idx].connections++;
@@ -88,10 +90,12 @@ NetworkGateway::get(QNetworkRequest request)
     // the request or all current managers already have MAX_CONNECTIONS
     // connections open. So we need to create and store a new manager for this
     // new request.
+
     if (reply == NULL)
     {
         // Create and store a new manager which will handle the current request
         // and another MAX_CONNECTIONS - 1 (current request) connections.
+
         manager = new QNetworkAccessManager();
 
         NetworkGatewayManager item;
@@ -102,12 +106,14 @@ NetworkGateway::get(QNetworkRequest request)
 
         // Signaled each time a request handled by the manager has finished.
         // Useful for bookkeeping purposes and cleanup.
+
         connect(manager,
                 SIGNAL(finished(QNetworkReply*)),
                 this,
                 SLOT(onFinished(QNetworkReply*)));
 
         // Finally make the request and assign the handle to it.
+
         reply = manager->get(request);
     }
 
@@ -120,15 +126,15 @@ void
 NetworkGateway::onFinished(QNetworkReply *reply)
 {
     QNetworkAccessManager* manager;
-    int itemToDelete, count;
+    int itemToDelete = -1;
+    int count = _managers.count();
 
-    itemToDelete = -1;
-    count = _managers.count();
     manager = qobject_cast<QNetworkAccessManager*>(QObject::sender());
 
     // A request made through a QNAM has finished.
     // Find the manager attached to the specific QNAME and decrease its current
     // connections possibly marking it for removal (if no active connections).
+
     for (int idx = 0; idx < count; idx++)
     {
         NetworkGatewayManager item = _managers.at(idx);
@@ -144,13 +150,14 @@ NetworkGateway::onFinished(QNetworkReply *reply)
         }
     }
 
+
     // If the manager has no active connections, it has been marked for removal.
     // Clean it as it no longer needed.
+
     if (itemToDelete != -1)
     {
         _managers.at(itemToDelete).manager->deleteLater();
         _managers.removeAt(itemToDelete);
     }
-
 }
 

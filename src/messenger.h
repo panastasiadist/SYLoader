@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -33,8 +33,12 @@
 #ifndef MESSENGER_H
 #define MESSENGER_H
 
+
+
 #include <QObject>
 #include <QString>
+
+
 
 class Messenger : public QObject
 {
@@ -43,10 +47,11 @@ class Messenger : public QObject
 public:
     void send(QString msg);
 
+
 signals:
     void receive(QString msg);
-
-public slots:
 };
+
+
 
 #endif // MESSENGER_H

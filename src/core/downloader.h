@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -29,9 +29,10 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
 #ifndef DOWNLOADER_H
 #define DOWNLOADER_H
+
+
 
 #include "download.h"
 #include "task_processor.h"
@@ -43,10 +44,11 @@
 #include <QProcess>
 #include <QTemporaryFile>
 
+
+
 class Downloader : public QObject
 {
     Q_OBJECT
-
 
 public:
     enum Status
@@ -80,7 +82,6 @@ private:
     QNetworkReply *_soundNetworkReply;
     QTemporaryFile *_soundFile;
     QTemporaryFile *_videoFile;
-
     QElapsedTimer _speedElapsedTimer;
     Download _download;
     Status _status;
@@ -94,6 +95,7 @@ private:
     qint64 _eta;
     qint64 _kbps;
     qint64 _percent;
+
     int _convertPid;
     int _retryCount;
     bool _cancelationPending;
@@ -108,16 +110,20 @@ private:
     void setStatus(Status status);
     void setProgress(qint64 eta, qint64 speed, qint64 percent);
 
+
 signals:
     void statusChanged();
     void progressChanged();
+
 
 private slots:
     void onDownloadSslErrors(const QList<QSslError> errors);
     void onTimerTimeout();
     void onDownloadFinished();
     void onDownloadReadyRead();
-    void onTaskStatusChanged(TaskProcessor::Status status, int pid, int exitCode);
+    void onTaskStatusChanged(TaskProcessor::Status status,
+                             int pid,
+                             int exitCode);
     void onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal);
 };
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -30,10 +30,12 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
+
+
 #include "messenger.h"
+
 
 void Messenger::send(QString msg)
 {
     emit receive(msg);
 }
-

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -33,11 +33,17 @@
 #ifndef ABOUTFORM_H
 #define ABOUTFORM_H
 
+
+
 #include <QDialog>
+
+
 
 namespace Ui {
 class AboutForm;
 }
+
+
 
 class AboutForm : public QWidget
 {
@@ -47,8 +53,10 @@ public:
     explicit AboutForm(QWidget *parent = 0);
     ~AboutForm();
 
+
 private:
     Ui::AboutForm *ui;
+
 
 private slots:
     void onHomepageClicked();

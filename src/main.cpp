@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -30,6 +30,8 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
+
+
 #include <QApplication>
 #include <QTextCodec>
 #include <QTranslator>
@@ -44,10 +46,12 @@
 #include "global.h"
 
 
+
 QSettings *Settings;
 TaskProcessor *Tasks;
 Messenger *MessageBus;
 NetworkGateway *Gateway;
+
 
 
 int
@@ -65,10 +69,12 @@ main(int argc, char *argv[])
     Tasks->setConcurrentTasks(1);
 
 
-    if (Settings->contains("download_path") == false) {
+    if (Settings->contains("download_path") == false)
+    {
         QVariant path = QStandardPaths
                 ::standardLocations(QStandardPaths::DesktopLocation)
                 .at(0);
+
         Settings->setValue("download_path", path);
     }
 
@@ -97,11 +103,10 @@ main(int argc, char *argv[])
     QString language = (Settings->value("language", "notset")).toString();
 
 
-    /* Load saved or default language
-     * First time the program is run.
-     * None language is set.
-     * If available, try applying the system language
-     */
+    // Load saved or default language.
+    // First time the program is run, none language is set.
+    // If available as a translation, try applying the system language.
+
     if (language == "notset")
     {
         QString systemLanguage = QLocale
@@ -115,6 +120,7 @@ main(int argc, char *argv[])
         foreach (QString language, languages)
         {
             QString languageName = language.replace(".qm","");
+
             if (languageName == systemLanguage)
             {
                 applySystemLanguage = true;
@@ -123,6 +129,7 @@ main(int argc, char *argv[])
         }
 
         // The system language was found installed
+
         if (applySystemLanguage)
         {
             translator.load(QString("languages/%1.qm").arg(systemLanguage));
@@ -135,7 +142,6 @@ main(int argc, char *argv[])
 
 
     a.installTranslator(&translator);
-
 
 
     MainWindow w;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -29,9 +29,10 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
 #ifndef DOWNLOADER_STATS_H
 #define DOWNLOADER_STATS_H
+
+
 
 struct DownloaderStats
 {
@@ -42,6 +43,8 @@ struct DownloaderStats
     int completed;
     int errored;
 };
+
+
 
 #endif // DOWNLOADER_STATS_H
 

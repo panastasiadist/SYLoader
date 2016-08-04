@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -29,6 +29,7 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
+
 
 
 #include "downloader.h"
@@ -125,21 +126,23 @@ Downloader::stop()
     if (_status == Downloading)
     {
         // Call the downloading managers to abort downloading.
+
         if (_soundNetworkReply != NULL) {
             _soundNetworkReply->abort();
         }
 
         // The video download manager has been activated to download the video
+
         if (_videoNetworkReply != NULL) {
             _videoNetworkReply->abort();
         }
-
     }
     else if (_status == Converting)
     {
         // Call the converting process to terminate.
         // Because we have set cancelation pending, the termination process will
         // not raise an IO Error.
+
         Tasks->abort(_convertPid);
     }
     else if (_status == Ready)
@@ -157,8 +160,6 @@ Downloader::stop()
 void
 Downloader::reset()
 {
-    QString filename = "";
-
     _videoBytes = 0;
     _soundBytes = 0;
     _bytesTotal = 0;
@@ -172,6 +173,8 @@ Downloader::reset()
     _cancelationPending = false;
     _convertPid = 0;
 
+    QString filename = "";
+
     bool hasArtist = !_download.artist.isEmpty();
     bool hasTitle = !_download.title.isEmpty();
     bool hasCoartist = !_download.coartist.isEmpty();
@@ -180,8 +183,9 @@ Downloader::reset()
     {
         filename += _download.artist;
 
-        if (hasCoartist)
+        if (hasCoartist) {
             filename += " ft. " + _download.coartist;
+        }
 
         filename += " - " + _download.title;
     }
@@ -251,19 +255,26 @@ Downloader::onDownloadFinished()
 {
     QNetworkReply::NetworkError videoError;
     QNetworkReply::NetworkError soundError;
+
     bool finished = false;
 
 
-    if (_videoNetworkReply != NULL) {
+    if (_videoNetworkReply != NULL)
+    {
         videoError = _videoNetworkReply->error();
-    } else {
+    }
+    else
+    {
         videoError = QNetworkReply::NoError;
     }
 
 
-    if (_soundNetworkReply != NULL) {
+    if (_soundNetworkReply != NULL)
+    {
         soundError = _soundNetworkReply->error();
-    } else {
+    }
+    else
+    {
         soundError = QNetworkReply::NoError;
     }
 
@@ -297,23 +308,24 @@ Downloader::onDownloadFinished()
             soundError == QNetworkReply::OperationCanceledError)
         {
             // User has canceled downloading
+
             goto Cleanup;
         }
         else if (videoError || soundError)
         {
             // Some kind of error occurred on both downloaders. Examine it.
+
             goto ErrorProcedure;
         }
         else
         {
             // It's possible that the downloaders finish without an error but
             // with no data downloaded. I've noticed that the video is still
-            // available for download. Don't know why this happens.
-            // Just check for this behavior and take action.
+            // available for download. This may happen if the video website has
+            // issued a redirect. Check this and take action accordingly.
+
             if (_soundNetworkReply != NULL && _soundBytesReceived == 0)
             {
-                // Maybe a redirect from YouTube. Try it.
-                // If it fails then, something else happened. Try error control.
                 if (redirect(_soundNetworkReply)) {
                     return;
                 }
@@ -353,6 +365,7 @@ Downloader::onDownloadFinished()
 
                 // The filename so far contains the artist's name.
                 // Write it using ID3 tags.
+
                 iargs += " -metadata artist=\"" + artist + "\" ";
                 iargs += " -metadata title=\"" + _download.title + "\" ";
             }
@@ -417,13 +430,10 @@ Downloader::onDownloadFinished()
                         .arg(savePath);
             }
 
-
             _convertPid = Tasks->enqueue(command);
-
 
             setStatus(Converting);
             setProgress(0, 0, 100);
-
 
             goto Cleanup;
         }
@@ -523,7 +533,9 @@ Cleanup:
 
 
 void
-Downloader::onTaskStatusChanged(TaskProcessor::Status status, int pid, int exitCode)
+Downloader::onTaskStatusChanged(TaskProcessor::Status status,
+                                int pid,
+                                int exitCode)
 {
     if (pid != _convertPid) {
         return;
@@ -562,6 +574,7 @@ void
 Downloader::onDownloadProgressChanged(qint64 bytesReceived, qint64 bytesTotal)
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(QObject::sender());
+
 
     // May be 0, on a connection error or glitch;
     if (bytesTotal == 0) {
@@ -622,12 +635,14 @@ Downloader::onDownloadReadyRead()
     if (_soundNetworkReply != NULL)
     {
         QByteArray soundData = _soundNetworkReply->readAll();
+
         _soundFile->write(soundData);
     }
 
     if (_videoNetworkReply != NULL)
     {
         QByteArray videoData = _videoNetworkReply->readAll();
+
         _videoFile->write(videoData);
     }
 }
@@ -669,6 +684,19 @@ Downloader::onTimerTimeout()
 void
 Downloader::download()
 {
+    QNetworkRequest request;
+    request.setRawHeader("Accept", "*/*");
+    request.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
+    request.setRawHeader("Accept-Language", "en-US,en;q=0.8");
+    request.setRawHeader("Accept-Charset", "utf-8");
+    request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) \
+                         AppleWebKit/537.36 (KHTML, like Gecko) \
+                         Chrome/44.0.2403.125 Safari/537.36");
+
+
+    // The timer is used to measure download speed and remaining time by
+    // measuring the bytes received in a slice of time (about 1000ms).
+
     _speedElapsedTimer.start();
 
 
@@ -678,14 +706,9 @@ Downloader::download()
         _soundFile->setAutoRemove(false);
         _soundFile->open();
 
-        QNetworkRequest srequest;
-        srequest.setUrl(QUrl(_download.soundUrl));
-        srequest.setRawHeader("Accept", "*/*");
-        srequest.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
-        srequest.setRawHeader("Accept-Language", "en-US,en;q=0.8");
-        srequest.setRawHeader("Accept-Charset", "utf-8");
-        srequest.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36");
-        _soundNetworkReply = Gateway->get(srequest);
+        request.setUrl(QUrl(_download.soundUrl));
+
+        _soundNetworkReply = Gateway->get(request);
 
         connect (_soundNetworkReply,
                  SIGNAL(downloadProgress(qint64,qint64)),
@@ -716,14 +739,9 @@ Downloader::download()
         _videoFile->setAutoRemove(false);
         _videoFile->open();
 
-        QNetworkRequest vrequest;
-        vrequest.setUrl(QUrl(_download.videoUrl));
-        vrequest.setRawHeader("Accept", "*/*");
-        vrequest.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
-        vrequest.setRawHeader("Accept-Language", "en-US,en;q=0.8");
-        vrequest.setRawHeader("Accept-Charset", "utf-8");
-        vrequest.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36");
-        _videoNetworkReply = Gateway->get(vrequest);
+        request.setUrl(QUrl(_download.videoUrl));
+
+        _videoNetworkReply = Gateway->get(request);
 
         connect (_videoNetworkReply,
                  SIGNAL(downloadProgress(qint64,qint64)),
@@ -766,12 +784,14 @@ Downloader::redirect(QNetworkReply *reply)
     }
 
 
-    QUrl redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
+    QUrl redirect = reply
+            ->attribute(QNetworkRequest::RedirectionTargetAttribute)
+            .toUrl();
 
 
-    if(redirect.isValid() && reply->url() != redirect)
+    if (redirect.isValid() && reply->url() != redirect)
     {
-        if(redirect.isRelative()) {
+        if (redirect.isRelative()) {
             redirect = reply->url().resolved(redirect);
         }
 
@@ -781,17 +801,21 @@ Downloader::redirect(QNetworkReply *reply)
         request.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
         request.setRawHeader("Accept-Language", "en-US,en;q=0.8");
         request.setRawHeader("Accept-Charset", "utf-8");
-        request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.125 Safari/537.36");
+        request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64)\
+                             AppleWebKit/537.36 (KHTML, like Gecko) \
+                             Chrome/44.0.2403.125 Safari/537.36");
 
         if (reply == _soundNetworkReply)
         {
             disconnect(_soundNetworkReply);
+
             _soundNetworkReply->deleteLater();
             _soundNetworkReply = reply = Gateway->get(request);
         }
         else if (reply == _videoNetworkReply)
         {
             disconnect(_videoNetworkReply);
+
             _videoNetworkReply->deleteLater();
             _videoNetworkReply = reply = Gateway->get(request);
         }
@@ -877,11 +901,11 @@ Downloader::isVideoMode()
 bool
 Downloader::isDownloadValid()
 {
-    bool titleOK = true,
-         videoUrlOK = true,
-         soundUrlOK = true,
-         videoExtensionOK = true,
-         soundExtensionOK = true;
+    bool titleOK = true;
+    bool videoUrlOK = true;
+    bool soundUrlOK = true;
+    bool videoExtensionOK = true;
+    bool soundExtensionOK = true;
 
 
     // Always available

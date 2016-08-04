@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -33,6 +33,8 @@
 #ifndef MAINFORM_H
 #define MAINFORM_H
 
+
+
 #include <QWidget>
 #include <QList>
 #include <QClipboard>
@@ -47,6 +49,7 @@
 #include "progress_item_delegate.h"
 
 
+
 namespace Ui {
 class MainForm;
 }
@@ -59,6 +62,7 @@ public:
     explicit MainForm(QWidget *parent = 0);
     ~MainForm();
 
+
 private:
     Ui::MainForm *ui;
     ProgressItemDelegate _progressItemDelegate;
@@ -69,7 +73,6 @@ private:
     QMap<int, int> _idToRowIndex;
     QList<OutputFormat> _outputFormats;
     bool _loaded = false;
-
 
     DownloaderStats getProcessorStats();
     void registerAndParseUrl(QString url);
@@ -91,5 +94,7 @@ private slots:
     void onModeCurrentIndexChanged(int);
     void onClipboardChanged(QClipboard::Mode mode);
 };
+
+
 
 #endif // MAINFORM_H

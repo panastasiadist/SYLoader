@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -30,9 +30,10 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
+
+
 #include <QDesktopServices>
 #include <QMessageBox>
-
 #include "main_window.h"
 #include "ui_main_window.h"
 #include "global.h"
@@ -41,6 +42,7 @@
 #include "about_form.h"
 #include "messenger.h"
 #include "updater.h"
+
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -111,7 +113,9 @@ MainWindow::MainWindow(QWidget *parent) :
             int msgret = QMessageBox::information(
                 this,
                 tr("New version available!"),
-                tr("SYLoader has a new version available. You should get the new version in order to continue downloading. Go to downloads page?"),
+                tr("SYLoader has a new version available. You should get the \
+                   new version in order to continue downloading. \
+                   Go to downloads page?"),
                 QMessageBox::Ok | QMessageBox::Cancel);
 
             if (msgret == QMessageBox::Ok)
@@ -127,12 +131,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 
-
-
 bool
 MainWindow::eventFilter (QObject *object, QEvent *event)
 {
     // Prevent the program from closing if downloading is in progress.
+
     if (event->type() == QEvent::Close && object == this)
     {
         if (_downloading)
@@ -155,8 +158,6 @@ MainWindow::eventFilter (QObject *object, QEvent *event)
 
 
 
-
-
 MainWindow::~MainWindow()
 {
     disconnect(MessageBus);
@@ -166,8 +167,6 @@ MainWindow::~MainWindow()
     delete MessageBus;
     delete ui;
 }
-
-
 
 
 
@@ -195,8 +194,6 @@ MainWindow::onMessageBusReceive(QString msg)
 
 
 
-
-
 void
 MainWindow::onMainClicked()
 {
@@ -207,8 +204,6 @@ MainWindow::onMainClicked()
 
 
 
-
-
 void
 MainWindow::onSettingsClicked()
 {
@@ -216,8 +211,6 @@ MainWindow::onSettingsClicked()
     ui->btnMain->setVisible(true);
     ui->lblFormTitle->setText(tr("Settings"));
 }
-
-
 
 
 
@@ -232,8 +225,6 @@ MainWindow::onAboutClicked()
 
 
 
-
-
 void
 MainWindow::onFacebookClicked()
 {
@@ -242,14 +233,8 @@ MainWindow::onFacebookClicked()
 
 
 
-
-
 void
 MainWindow::onTwitterClicked()
 {
     QDesktopServices::openUrl(QUrl(TWITTER_URL));
 }
-
-
-
-

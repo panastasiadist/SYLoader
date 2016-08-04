@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -59,11 +59,13 @@ SettingsForm::SettingsForm(QWidget *parent) :
 
     ui->txtSavepath->setText(Settings->value("download_path").toString());
 
+
     connect (ui->btnBrowse, SIGNAL(clicked()), this, SLOT(onBrowseClicked()));
     connect (ui->btnSave, SIGNAL(clicked()), this, SLOT(onSaveClicked()));
 
 
     // Load languages found in languages directory
+
     QDir directory (QString("languages"), QString("*.qm"));
     QStringList languages = directory.entryList();
     foreach (QString language, languages)
@@ -72,10 +74,14 @@ SettingsForm::SettingsForm(QWidget *parent) :
         ui->cbxLanguage->addItem(languageName);
     }
 
+
     // Add the builtin language
+
     ui->cbxLanguage->addItem("English");
 
+
     // Select current language
+
     QString language = (Settings->value("language", "English")).toString();
     for (int index = 0; index < ui->cbxLanguage->count(); index++)
     {
@@ -89,14 +95,10 @@ SettingsForm::SettingsForm(QWidget *parent) :
 
 
 
-
-
 SettingsForm::~SettingsForm()
 {
     delete ui;
 }
-
-
 
 
 
@@ -112,8 +114,6 @@ SettingsForm::onBrowseClicked()
     if (d != "")
         ui->txtSavepath->setText(d);
 }
-
-
 
 
 
@@ -142,4 +142,3 @@ SettingsForm::onSaveClicked()
                 tr("Your settings have been updated!"));
 
 }
-

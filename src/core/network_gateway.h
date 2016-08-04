@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -29,9 +29,10 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
 #ifndef NETWORK_GATEWAY_H
 #define NETWORK_GATEWAY_H
+
+
 
 #include <QObject>
 #include <QMap>
@@ -39,11 +40,14 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
+
+
 struct NetworkGatewayManager
 {
     QNetworkAccessManager *manager;
     int connections;
 };
+
 
 
 class NetworkGateway : public QObject
@@ -61,6 +65,7 @@ public:
 
 
 signals:
+
 
 public slots:
     void onFinished(QNetworkReply *reply);

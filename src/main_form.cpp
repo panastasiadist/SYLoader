@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -30,6 +30,8 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
+
+
 #include <QMessageBox>
 
 #include "main_form.h"
@@ -39,6 +41,7 @@
 #include "about_form.h"
 #include "messenger.h"
 #include "core/output_format.h"
+
 
 
 MainForm::MainForm(QWidget *parent) :
@@ -530,13 +533,17 @@ MainForm::onParserFinished(QList<Download> downloads)
 
     _processor.setConcurrentDownloads(Settings->value("sim_downloads").toInt());
 
-    // If autostart is enabled, try starting the new downloads
+
+    // If autostart is enabled, try starting the new downloads.
+
     if (Settings->value("autostart") == true) {
         _processor.process();
     }
 
+
     // If there aren't parsers working at the moment, then we should update UI
     // accordingly.
+
     if (!_parser.parsing()) {
         MessageBus->send("parsing_finished");
     }
@@ -549,10 +556,13 @@ MainForm::applyCurrentMode()
 {
     OutputFormat format = _outputFormats.at(ui->cbxMode->currentIndex());
 
+
     // Store the new output format id in order to be remembered on next launch.
+
     if (_loaded) {
         Settings->setValue("download_mode", format.uid);
     }
+
 
     // Apply the new output format setting to all downloaders not currently
     // downloading or converting.

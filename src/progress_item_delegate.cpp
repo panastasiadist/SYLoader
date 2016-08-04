@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 
-#include "progress_item_delegate.h"
+
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QStyledItemDelegate>
@@ -38,9 +38,14 @@
 #include <QString>
 #include <QVariant>
 #include <QLocale>
+#include "progress_item_delegate.h"
+
+
 
 ProgressItemDelegate::ProgressItemDelegate(QObject *object)
     : QStyledItemDelegate(object) {}
+
+
 
 void
 ProgressItemDelegate::paint(

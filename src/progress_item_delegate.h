@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -33,8 +33,12 @@
 #ifndef PROGRESS_ITEM_DELEGATE_H
 #define PROGRESS_ITEM_DELEGATE_H
 
+
+
 #include <QObject>
 #include <QtWidgets/QStyledItemDelegate>
+
+
 
 class ProgressItemDelegate : public QStyledItemDelegate
 {
@@ -49,5 +53,7 @@ public:
         const QModelIndex &index
     ) const;
 };
+
+
 
 #endif // PROGRESS_ITEM_DELEGATE_H

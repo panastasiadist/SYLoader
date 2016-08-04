@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -33,11 +33,17 @@
 #ifndef SETTINGSFORM_H
 #define SETTINGSFORM_H
 
+
+
 #include <QDialog>
+
+
 
 namespace Ui {
 class SettingsForm;
 }
+
+
 
 class SettingsForm : public QWidget
 {
@@ -47,12 +53,16 @@ public:
     explicit SettingsForm(QWidget *parent = 0);
     ~SettingsForm();
 
+
 private:
     Ui::SettingsForm *ui;
+
 
 private slots:
     void onBrowseClicked();
     void onSaveClicked();
 };
+
+
 
 #endif // SETTINGSFORM_H

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -33,12 +33,16 @@
 #ifndef URL_PROCESSOR_H
 #define URL_PROCESSOR_H
 
+
+
 #include "download.h"
 #include "extractors/youtube_extractor.h"
 #include <QObject>
 #include <QProcess>
 #include <QString>
 #include <QList>
+
+
 
 class UrlProcessor : public QObject
 {

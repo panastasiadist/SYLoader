@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -29,14 +29,17 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
 #ifndef TASK_PROCESSOR_H
 #define TASK_PROCESSOR_H
+
+
 
 #include <QObject>
 #include <QMap>
 #include <QQueue>
 #include <QProcess>
+
+
 
 class TaskProcessor : public QObject
 {
@@ -54,6 +57,7 @@ public:
     bool running(int pid);
     void setConcurrentTasks(int num);
 
+
 private:
     QQueue<int> _queue;
     QMap<QProcess*, int> _processes;
@@ -63,8 +67,10 @@ private:
 
     void process();
 
+
 signals:
     void statusChanged(TaskProcessor::Status status, int pid, int exitCode);
+
 
 public slots:
     void onCompleted(int exitCode);

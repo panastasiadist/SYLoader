@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -77,8 +77,9 @@ YoutubeExtractor::extract(QString url)
 QString
 YoutubeExtractor::canonicalizeUrl(QString url)
 {
-    if (url.startsWith("https://"))
+    if (url.startsWith("https://")) {
         url = url.replace("https://", "http://");
+    }
 
     QStringList urlParts = url.split("?");
     QString urlBasicPart = urlParts.at(0);
@@ -91,10 +92,15 @@ YoutubeExtractor::canonicalizeUrl(QString url)
     {
         QStringList t = i.split("=");
         QString verb = t.at(0);
+
         if (verb == "v")
+        {
             videoQueryItem = i;
+        }
         else if (verb == "list")
+        {
             listQueryItem = i;
+        }
     }
 
     return
@@ -136,19 +142,21 @@ YoutubeExtractor::onProcessFinished(int exitCode)
                 .arg(QString::number(exitCode));
 
 
-    /* youtube-dl may return a result different to 0 if it finds a non critical
-     * problem. A non critical problem is when a video is not available,
-     * deleted, blocked. Then youtube-dl ignores it but its output is valid for
-     * the rest of our code. So any error checking will be performed from our
-     * code against the returned data.
-     */
-
+    // youtube-dl may return a result different to 0 if it finds a non critical
+    // problem. A non critical problem is when a video is not available,
+    // deleted, blocked. Then youtube-dl ignores it but its output is valid for
+    // the rest of our code. So any error checking will be performed from our
+    // code against the returned data.
 
     QJsonValue t = odoc.value("entries");
     if (t.isUndefined())
+    {
         entries.append(odoc);
+    }
     else
+    {
         entries = t.toArray();
+    }
 
 
     foreach (QJsonValue e, entries)
@@ -163,18 +171,24 @@ YoutubeExtractor::onProcessFinished(int exitCode)
         download.videoTitle = videoTitle;
 
         QJsonArray requestedFormats = eo.value("requested_formats").toArray();
+
         foreach (QJsonValue r, requestedFormats)
         {
             QJsonObject format = r.toObject();
             QString url = format.value("url").toString();
             QString extension = format.value("ext").toString();
 
-            if (format.value("acodec").toString() != "none") {
+            if (format.value("acodec").toString() != "none")
+            {
                 // Music track
+
                 download.soundExtension = extension;
                 download.soundUrl = url;
-            } else {
+            }
+            else
+            {
                 // Video track
+
                 download.videoExtension = extension;
                 download.videoUrl = url;
             }
@@ -182,11 +196,11 @@ YoutubeExtractor::onProcessFinished(int exitCode)
 
 
 
-        /* We need to download m4a sound streams and mp4 video streams.
-         * If the best available quality given in requested_formats by
-         * youtube-dl is not m4a and mp4, then fallback to the next best
-         * quality of the aforementioned formats.
-         */
+        // We need to download m4a sound streams and mp4 video streams.
+        // If the best available quality given in requested_formats by
+        // youtube-dl is not m4a and mp4, then fallback to the next best
+        // quality of the aforementioned formats.
+
         if (download.soundExtension != "m4a" ||
             download.videoExtension != "mp4")
         {
@@ -194,14 +208,16 @@ YoutubeExtractor::onProcessFinished(int exitCode)
             int bestWidthSoFar = 0;
 
             QJsonArray formats = eo.value("formats").toArray();
+
             foreach (QJsonValue r, formats)
             {
                 QJsonObject format = r.toObject();
                 QString ext = format.value("ext").toString();
 
-                // Music track
                 if (format.value("acodec").toString() != "none")
                 {
+                    // Music track
+
                     if (download.soundExtension != "m4a")
                     {
                         int abr = format.value("abr").toInt();
@@ -218,6 +234,7 @@ YoutubeExtractor::onProcessFinished(int exitCode)
                 else
                 {
                     // Video track
+
                     if (download.videoExtension != "mp4")
                     {
                         int width = format.value("width").toInt();
@@ -231,16 +248,15 @@ YoutubeExtractor::onProcessFinished(int exitCode)
                         }
                     }
                 }
-
             }
         }
 
 
-        /* The minimum information required by the rest of the software.
-         * If for some reason, youtube-dl has exitted normally but has
-         * given empty data for a download, then retry parsing.
-         * Most often this happens because of a deleted or not available video.
-         */
+        // The minimum information required by the rest of the software.
+        // If for some reason, youtube-dl has exitted normally but has
+        // given empty data for a download, then retry parsing.
+        // Most often this happens because of a deleted or not available video.
+
         bool eVideoUrl = download.videoUrl.isEmpty();
         bool eSoundUrl = download.soundUrl.isEmpty();
         bool eTitle = download.videoTitle.isEmpty();
@@ -249,15 +265,14 @@ YoutubeExtractor::onProcessFinished(int exitCode)
 
         if (eVideoUrl || eSoundUrl || eTitle || eVideoExtension || eSoundExtension)
         {
-            qDebug() << QString("Parsing requirements error for %1. Ignoring...")
+            qDebug() << QString("Parsing requirements error for %1. \
+                                Ignoring...")
                         .arg(download.normalUrl);
 
             continue;
         }
 
-
         downloads.append(download);
-
     }
 
     emit finished(0, downloads);

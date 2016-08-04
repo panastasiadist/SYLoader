@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -33,6 +33,7 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
+
 #include <QSettings>
 #include "core/task_processor.h"
 #include "core/network_gateway.h"
@@ -42,7 +43,6 @@
 #define SOFTWARE_VERSION_MAJOR 1
 #define SOFTWARE_VERSION_MINOR 0
 #define SOFTWARE_VERSION_PATCH 0
-
 #define UPDATE_CHECK_URL "http://panastasiadist.github.io/SYLoader/lversion.html"
 #define HOMEPAGE_URL "http://panastasiadist.github.io/SYLoader"
 #define DOWNLOADS_URL "http://panastasiadist.github.io/SYLoader"

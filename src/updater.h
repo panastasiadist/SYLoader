@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -33,7 +33,11 @@
 #ifndef UPDATER_H
 #define UPDATER_H
 
+
+
 #include <QObject>
+
+
 
 class Updater : public QObject
 {
@@ -42,12 +46,11 @@ class Updater : public QObject
 private:
     Updater();
 
+
 public:
     static bool checkForUpdates(bool &hasUpdate);
-
-signals:
-
-public slots:
 };
+
+
 
 #endif // UPDATER_H

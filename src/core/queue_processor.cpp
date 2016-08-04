@@ -1,3 +1,37 @@
+/*******************************************************************************
+ * Copyright 2016 Panagiotis Anastasiadis
+ * This file is part of SYLoader.
+ *
+ * SYLoader is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * SYLoader is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SYLoader. If not, see http://www.gnu.org/licenses.
+ *
+ * In addition, as a special exception, the copyright holders give
+ * permission to link the code of portions of this program with the
+ * OpenSSL library under certain conditions as described in each
+ * individual source file, and distribute linked combinations
+ * including the two.
+ *
+ * You must obey the GNU General Public License in all respects
+ * for all of the code used other than OpenSSL. If you modify
+ * file(s) with this exception, you may extend this exception to your
+ * version of the file(s), but you are not obligated to do so. If you
+ * do not wish to do so, delete this exception statement from your
+ * version. If you delete this exception statement from all source
+ * files in the program, then also delete it here.
+ ******************************************************************************/
+
+
+
 #include "queue_processor.h"
 
 
@@ -47,6 +81,7 @@ QueueProcessor::enqueue(Download download)
 {
     // Create a new downloader for the passed in download, store it and return
     // its unique id.
+
     Downloader *downloader = new Downloader(download, _savePath);
 
     connect(downloader,
@@ -61,7 +96,6 @@ QueueProcessor::enqueue(Download download)
 
 
     _lastDownloaderId++;
-    _queue.append(_lastDownloaderId);
     _idToDownloader.insert(_lastDownloaderId, downloader);
 
     return _lastDownloaderId;
@@ -72,21 +106,17 @@ QueueProcessor::enqueue(Download download)
 bool
 QueueProcessor::remove(int id)
 {
-    Downloader *downloader = _idToDownloader.value(id);
-
-    if (downloader != NULL)
-    {
-        downloader->deleteLater();
-
-        _queue.removeOne(id);
-        _idToDownloader.remove(id);
-
-        return true;
-    }
-    else
-    {
+    if (_idToDownloader.contains(id) == false) {
         return false;
     }
+
+    Downloader *downloader = _idToDownloader.value(id);
+
+    downloader->deleteLater();
+
+    _idToDownloader.remove(id);
+
+    return true;
 }
 
 
@@ -97,11 +127,9 @@ QueueProcessor::clear()
     foreach (int id, _idToDownloader.keys())
     {
         Downloader *downloader = _idToDownloader.value(id);
-        //downloader->disconnect(this);
-        delete downloader;
+        downloader->deleteLater();
     }
 
-    _queue.empty();
     _idToDownloader.empty();
 
     return true;
@@ -112,26 +140,27 @@ QueueProcessor::clear()
 bool
 QueueProcessor::start(int id)
 {
+    if (_idToDownloader.contains(id) == false) {
+        return false;
+    }
+
     Downloader *downloader = _idToDownloader.value(id);
 
-    if (downloader != NULL)
+    Downloader::Status status = downloader->getStatus();
+
+    if (status == Downloader::Canceled ||
+        status == Downloader::ErrorIO ||
+        status == Downloader::ErrorConnection)
     {
-        Downloader::Status status = downloader->getStatus();
+        downloader->reset();
+    }
 
-        if (status == Downloader::Canceled ||
-            status == Downloader::ErrorIO ||
-            status == Downloader::ErrorConnection)
-        {
-            downloader->reset();
-        }
-
-        if (status != Downloader::Complete &&
-            status != Downloader::Converting &&
-            status != Downloader::Downloading)
-        {
-            downloader->start();
-            return true;
-        }
+    if (status != Downloader::Complete &&
+        status != Downloader::Converting &&
+        status != Downloader::Downloading)
+    {
+        downloader->start();
+        return true;
     }
 
     return false;
@@ -142,18 +171,19 @@ QueueProcessor::start(int id)
 bool
 QueueProcessor::stop(int id)
 {
+    if (_idToDownloader.contains(id) == false) {
+        return false;
+    }
+
     Downloader *downloader = _idToDownloader.value(id);
 
-    if (downloader != NULL)
-    {
-        Downloader::Status status = downloader->getStatus();
+    Downloader::Status status = downloader->getStatus();
 
-        if (status == Downloader::Downloading ||
-            status == Downloader::Converting)
-        {
-            downloader->stop();
-            return true;
-        }
+    if (status == Downloader::Downloading ||
+        status == Downloader::Converting)
+    {
+        downloader->stop();
+        return true;
     }
 
     return false;
@@ -257,6 +287,7 @@ QueueProcessor::process()
     int started = 0;
 
     // No processors currently run, now starting.
+
     if (ready == _idToDownloader.keys().length()) {
         emit downloadsStarted();
     }
@@ -264,13 +295,15 @@ QueueProcessor::process()
     // We will start a new download as soon as a processor has finished
     // downloading taking into account the maximum number of concurrent
     // downloads the user has set.
+
     if (ready > 0)
     {
         int availableSlots = _numConcurrentDownloads - downloading;
         int newDownloadSlots = 0;
 
-        // It may be less than zero if the user has decreased concurrent
-        // downloads while downloading has started.
+        // Available slots It may be less than zero if the user has decreased
+        // concurrent downloads while downloading has started.
+
         if (availableSlots <= 0) {
             return 0;
         }
@@ -318,9 +351,6 @@ QueueProcessor::onDownloaderStatusChanged()
         status == Downloader::Converting ||
         status == Downloader::Canceled)
     {
-        //DownloaderStats stats = getStats();
-        //int run = stats.canceled + stats.completed + stats.errored;
-
         if (!running())
         {
             emit downloadsFinished();
@@ -329,6 +359,7 @@ QueueProcessor::onDownloaderStatusChanged()
         {
             // Autoprocessing enables automatic start of the next download in
             // the queue when the current one is finished.
+
             if (_autoProcessing) {
                 process();
             }
@@ -348,4 +379,3 @@ QueueProcessor::onDownloaderProgressChanged()
 
     emit downloadProgressChanged(id, progress);
 }
-

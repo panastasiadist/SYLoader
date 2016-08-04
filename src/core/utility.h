@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -33,18 +33,26 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 
+
+
 #include <QString>
 #include "download.h"
 
+
+
 class Utility
 {
+
 private:
     Utility() {}
+
 
 public:
     static bool is64Bit();
     static QString cleanFilename(QString desiredFilename);
     static Download decorateDownload(Download download);
 };
+
+
 
 #endif // UTILITY_H
