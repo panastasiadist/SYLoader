@@ -101,7 +101,11 @@ UrlProcessor::canonicalizeUrl(QString url)
 
     if (extractor != NULL)
     {
-        return extractor->canonicalizeUrl(url);
+        QString res = extractor->canonicalizeUrl(url);
+
+        extractor->deleteLater();
+
+        return res;
     }
     else
     {
@@ -118,7 +122,11 @@ UrlProcessor::isPlaylist(QString url)
 
     if (extractor != NULL)
     {
-        return extractor->isPlaylist(url);
+        bool res = extractor->isPlaylist(url);
+
+        extractor->deleteLater();
+
+        return res;
     }
     else
     {
@@ -148,6 +156,8 @@ UrlProcessor::onExtractorFinished(int result, QList<Download> downloads)
     foreach(Download d, downloads) {
         temp.append(Utility::decorateDownload(d));
     }
+
+    extractor->deleteLater();
 
     emit parsed(temp);
 
