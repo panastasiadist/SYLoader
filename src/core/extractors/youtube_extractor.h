@@ -34,7 +34,6 @@
 
 
 
-#include "QObject"
 #include "QProcess"
 #include "core/extractor.h"
 
@@ -54,8 +53,7 @@ public:
 
 private:
     QProcess _process;
-    QString _url;
-    int _retryCount;
+    //QString _url;
 
 
 public slots:

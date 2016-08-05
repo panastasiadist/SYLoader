@@ -29,45 +29,35 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
-#ifndef URL_PROCESSOR_H
-#define URL_PROCESSOR_H
-
+#ifndef VIMEO_EXTRACTOR_H
+#define VIMEO_EXTRACTOR_H
 
 
-#include <QObject>
-#include <QProcess>
-#include <QString>
-#include <QList>
+
+#include "QProcess"
 #include "core/extractor.h"
-#include "download.h"
 
 
 
-class UrlProcessor : public QObject
+class VimeoExtractor : public Extractor
 {
     Q_OBJECT
 
 public:
-    UrlProcessor();
-    void parse(QString url);
-    bool parsing();
+    VimeoExtractor();
+
+    void extract(QString url);
     bool isPlaylist(QString url);
-    bool isSupported(QString url);
+    static bool isSupported(QString url);
 
 
 private:
-    QString _url;
-    Extractor* getExtractor(QString url);
-    QList<Extractor*> _extractors;
-
-
-signals:
-    void parsed(QList<Download> downloads);
+    QProcess _process;
+    //QString _url;
 
 
 public slots:
-    void onExtractorFinished(int result, QList<Download> downloads);
+    void onProcessFinished(int exitCode);
 };
 
-#endif // URL_PROCESSOR_H
+#endif // VIMEO_EXTRACTOR_H

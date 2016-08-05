@@ -690,14 +690,14 @@ void
 Downloader::download()
 {
     QNetworkRequest request;
-    request.setRawHeader("Accept", "*/*");
-    request.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
-    request.setRawHeader("Accept-Language", "en-US,en;q=0.8");
-    request.setRawHeader("Accept-Charset", "utf-8");
-    request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) \
+    //request.setRawHeader("Accept", "*/*");
+    //request.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
+    //request.setRawHeader("Accept-Language", "en-US,en;q=0.8");
+    //request.setRawHeader("Accept-Charset", "utf-8");
+    //request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) \
                          AppleWebKit/537.36 (KHTML, like Gecko) \
                          Chrome/44.0.2403.125 Safari/537.36");
-
+    request.setRawHeader("Referer", _download.normalUrl.toLatin1().data());
 
     // The timer is used to measure download speed and remaining time by
     // measuring the bytes received in a slice of time (about 1000ms).

@@ -29,11 +29,13 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
-#include "url_processor.h"
-#include "utility.h"
 #include <QList>
 #include <QDebug>
+#include "url_processor.h"
+#include "core/extractors/youtube_extractor.h"
+#include "core/extractors/vimeo_extractor.h"
+#include "utility.h"
+
 
 
 
@@ -47,6 +49,10 @@ UrlProcessor::getExtractor(QString url)
     if (YoutubeExtractor::isSupported(url))
     {
         return new YoutubeExtractor();
+    }
+    else if (VimeoExtractor::isSupported(url))
+    {
+        return new VimeoExtractor();
     }
     else
     {
@@ -119,7 +125,10 @@ UrlProcessor::isPlaylist(QString url)
 bool
 UrlProcessor::isSupported(QString url)
 {
-    return YoutubeExtractor::isSupported(url);
+    return
+            YoutubeExtractor::isSupported(url) ||
+            VimeoExtractor::isSupported(url);
+
 }
 
 
