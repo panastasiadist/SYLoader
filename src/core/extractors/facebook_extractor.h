@@ -29,8 +29,8 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-#ifndef VIMEO_EXTRACTOR_H
-#define VIMEO_EXTRACTOR_H
+#ifndef FACEBOOK_EXTRACTOR_H
+#define FACEBOOK_EXTRACTOR_H
 
 
 
@@ -39,12 +39,12 @@
 
 
 
-class VimeoExtractor : public Extractor
+class FacebookExtractor : public Extractor
 {
     Q_OBJECT
 
 public:
-    VimeoExtractor();
+    FacebookExtractor();
 
     void extract(QString url);
     bool isPlaylist(QString url);
@@ -59,4 +59,4 @@ public slots:
     void onProcessFinished(int exitCode);
 };
 
-#endif // VIMEO_EXTRACTOR_H
+#endif // FACEBOOK_EXTRACTOR_H

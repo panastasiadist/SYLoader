@@ -53,7 +53,6 @@ public:
 
 private:
     QProcess _process;
-    //QString _url;
 
 
 public slots:

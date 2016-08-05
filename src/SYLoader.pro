@@ -27,7 +27,8 @@ SOURCES += main.cpp\
     progress_item_delegate.cpp \
     about_form.cpp \
     core/queue_processor.cpp \
-    core/extractors/vimeo_extractor.cpp
+    core/extractors/vimeo_extractor.cpp \
+    core/extractors/facebook_extractor.cpp
 
 HEADERS  += \
     core/download.h \
@@ -50,7 +51,8 @@ HEADERS  += \
     core/queue_processor.h \
     core/downloader_progress.h \
     core/output_format.h \
-    core/extractors/vimeo_extractor.h
+    core/extractors/vimeo_extractor.h \
+    core/extractors/facebook_extractor.h
 
 FORMS    += \
     about_form.ui \
