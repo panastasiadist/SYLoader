@@ -38,6 +38,7 @@
 #include <QObject>
 #include <QString>
 #include <QList>
+#include <QProcess>
 
 
 
@@ -46,12 +47,21 @@ class Extractor : public QObject
     Q_OBJECT
 
 public:
-    virtual void extract(QString) {}
+    Extractor();
     virtual bool isPlaylist(QString) = 0;
-    //virtual QString canonicalizeUrl(QString) = 0;
+    virtual void extract(QString url);
+
+
+protected:
+    QProcess _process;
+
 
 signals:
     void finished(int, QList<Download>);
+
+
+protected slots:
+    virtual void onProcessFinished(int exitCode);
 };
 
 #endif // EXTRACTOR_H

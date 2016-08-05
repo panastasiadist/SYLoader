@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -29,7 +29,6 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-#include "youtube_extractor.h"
 #include <QByteArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -39,67 +38,36 @@
 #include <QFile>
 #include <QList>
 #include <QDebug>
+#include "extractor.h"
 
 
 
-/*
-QString
-YoutubeExtractor::canonicalizeUrl(QString url)
+Extractor::Extractor()
 {
-    if (url.startsWith("https://")) {
-        url = url.replace("https://", "http://");
-    }
-
-    QStringList urlParts = url.split("?");
-    QString urlBasicPart = urlParts.at(0);
-    QString urlQueryPart = urlParts.at(1);
-    QStringList urlQueryItems = urlQueryPart.split("&");
-    QString videoQueryItem = "";
-    QString listQueryItem = "";
-
-    foreach (QString i, urlQueryItems)
-    {
-        QStringList t = i.split("=");
-        QString verb = t.at(0);
-
-        if (verb == "v")
-        {
-            videoQueryItem = i;
-        }
-        else if (verb == "list")
-        {
-            listQueryItem = i;
-        }
-    }
-
-    return
-        urlBasicPart +
-        "?" +
-        videoQueryItem +
-        (listQueryItem.isEmpty() ? "" : "&" + listQueryItem);
-}
-*/
-
-
-bool
-YoutubeExtractor::isSupported(QString url)
-{
-    return
-        url.contains("youtube.com/watch") ||
-        url.contains("youtube.com/playlist?list=");
-}
-
-
-bool
-YoutubeExtractor::isPlaylist(QString url)
-{
-    return url.contains("playlist?list=");
+    connect(&_process,
+            SIGNAL(finished(int, QProcess::ExitStatus)),
+            this,
+            SLOT(onProcessFinished(int)));
 }
 
 
 
 void
-YoutubeExtractor::onProcessFinished(int exitCode)
+Extractor::extract(QString url)
+{
+    QString ydlExecutable = "youtube-dl";
+    QString format = "%1 --no-warnings --no-cache-dir --prefer-insecure \
+            --no-check-certificate -i -J \"%2\"";
+
+    _process.start(QString(format).arg(ydlExecutable, url));
+
+    return;
+}
+
+
+
+void
+Extractor::onProcessFinished(int exitCode)
 {
     QByteArray data = _process.readAllStandardOutput();
     QJsonDocument doc = QJsonDocument::fromJson(QString(data).toUtf8());
@@ -118,6 +86,7 @@ YoutubeExtractor::onProcessFinished(int exitCode)
     // code against the returned data.
 
     QJsonValue t = odoc.value("entries");
+
     if (t.isUndefined())
     {
         entries.append(odoc);
@@ -136,33 +105,11 @@ YoutubeExtractor::onProcessFinished(int exitCode)
 
         Download download;
 
-        download.signature = "youtube" + eo.value("display_id").toString();
+        download.signature = "facebook" + eo.value("id").toString();
         download.normalUrl = eo.value("webpage_url").toString();
         download.videoTitle = videoTitle;
-
-        QJsonArray requestedFormats = eo.value("requested_formats").toArray();
-
-        foreach (QJsonValue r, requestedFormats)
-        {
-            QJsonObject format = r.toObject();
-            QString url = format.value("url").toString();
-            QString extension = format.value("ext").toString();
-
-            if (format.value("acodec").toString() != "none")
-            {
-                // Music track
-
-                download.soundExtension = extension;
-                download.soundUrl = url;
-            }
-            else
-            {
-                // Video track
-
-                download.videoExtension = extension;
-                download.videoUrl = url;
-            }
-        }
+        download.videoUrl = eo.value("url").toString();
+        download.videoExtension = eo.value("ext").toString();
 
 
         // The minimum information required by the rest of the software.
@@ -171,12 +118,10 @@ YoutubeExtractor::onProcessFinished(int exitCode)
         // Most often this happens because of a deleted or not available video.
 
         bool eVideoUrl = download.videoUrl.isEmpty();
-        bool eSoundUrl = download.soundUrl.isEmpty();
         bool eTitle = download.videoTitle.isEmpty();
         bool eVideoExtension = download.videoExtension.isEmpty();
-        bool eSoundExtension = download.soundExtension.isEmpty();
 
-        if (eVideoUrl || eSoundUrl || eTitle || eVideoExtension || eSoundExtension)
+        if (eVideoUrl || eTitle || eVideoExtension)
         {
             qDebug() << QString("Parsing requirements error for %1. \
                                 Ignoring...")

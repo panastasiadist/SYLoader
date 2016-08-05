@@ -44,19 +44,8 @@ class VimeoExtractor : public Extractor
     Q_OBJECT
 
 public:
-    VimeoExtractor();
-
-    void extract(QString url);
     bool isPlaylist(QString url);
     static bool isSupported(QString url);
-
-
-private:
-    QProcess _process;
-
-
-public slots:
-    void onProcessFinished(int exitCode);
 };
 
 #endif // VIMEO_EXTRACTOR_H

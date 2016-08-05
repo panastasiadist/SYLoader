@@ -44,20 +44,11 @@ class YoutubeExtractor : public Extractor
     Q_OBJECT
 
 public:
-    YoutubeExtractor();
-
-    void extract(QString url);
     bool isPlaylist(QString url);
     static bool isSupported(QString url);
 
-
-private:
-    QProcess _process;
-
-
-public slots:
+protected slots:
     void onProcessFinished(int exitCode);
-
 };
 
 

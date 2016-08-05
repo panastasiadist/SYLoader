@@ -28,7 +28,8 @@ SOURCES += main.cpp\
     about_form.cpp \
     core/queue_processor.cpp \
     core/extractors/vimeo_extractor.cpp \
-    core/extractors/facebook_extractor.cpp
+    core/extractors/facebook_extractor.cpp \
+    core/extractor.cpp
 
 HEADERS  += \
     core/download.h \

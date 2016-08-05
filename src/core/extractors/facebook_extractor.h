@@ -44,19 +44,8 @@ class FacebookExtractor : public Extractor
     Q_OBJECT
 
 public:
-    FacebookExtractor();
-
-    void extract(QString url);
     bool isPlaylist(QString url);
     static bool isSupported(QString url);
-
-
-private:
-    QProcess _process;
-
-
-public slots:
-    void onProcessFinished(int exitCode);
 };
 
 #endif // FACEBOOK_EXTRACTOR_H
