@@ -42,6 +42,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QFile>
 #include <QDir>
+#include "core/utility.h"
 #include "main_window.h"
 #include "global.h"
 
@@ -61,12 +62,16 @@ main(int argc, char *argv[])
     QApplication::setApplicationName("SYLoader");
     QApplication::setOrganizationName("SYLoader");
 
+    int maxThreads = Utility::getMaxThreads() - 1;
+    if (maxThreads == 0) {
+        maxThreads = 1;
+    }
 
     Settings = new QSettings();
     MessageBus = new Messenger();
     Gateway = new NetworkGateway();
     Tasks = new TaskProcessor();
-    Tasks->setConcurrentTasks(1);
+    Tasks->setConcurrentTasks(maxThreads);
 
 
     if (Settings->contains("download_path") == false)

@@ -36,6 +36,7 @@
 #include <QRegExp>
 #include <QRegularExpression>
 #include <QTextStream>
+#include <QThread>
 
 
 
@@ -103,6 +104,14 @@ Utility::is64Bit()
     {
         return false;
     }
+}
+
+
+
+int
+Utility::getMaxThreads()
+{
+    return QThread::idealThreadCount();
 }
 
 

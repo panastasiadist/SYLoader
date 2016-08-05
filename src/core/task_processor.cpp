@@ -128,12 +128,15 @@ TaskProcessor::process()
 
     int current = _processes.count();
 
+
     // Processes remaining to run concurrently taking into account the number
     // of already running processes.
+
 
     int remaining = _num - current;
 
     // Attempt to run the next processes in the queue up to concurrency limit.
+
 
     for (int i = 0; i < remaining; i++)
     {
@@ -152,6 +155,10 @@ TaskProcessor::process()
         process->start(command);
 
         emit statusChanged(Started, pid, 0);
+
+        if (_queue.isEmpty()) {
+            break;
+        }
     }
 }
 
