@@ -81,6 +81,7 @@ YoutubeExtractor::canonicalizeUrl(QString url)
 */
 
 
+
 bool
 YoutubeExtractor::isSupported(QString url)
 {
@@ -88,6 +89,7 @@ YoutubeExtractor::isSupported(QString url)
         url.contains("youtube.com/watch") ||
         url.contains("youtube.com/playlist?list=");
 }
+
 
 
 bool

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Panagiotis Anastasiadis
+ * Copyright 2016 Panagiotis Anastasiadis
  * This file is part of SYLoader.
  *
  * SYLoader is free software: you can redistribute it and/or modify
@@ -29,20 +29,22 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-#include "facebook_extractor.h"
+#ifndef DAILYMOTION_EXTRACTOR_H
+#define DAILYMOTION_EXTRACTOR_H
 
 
 
-bool
-FacebookExtractor::isSupported(QString url)
+#include "core/extractor.h"
+
+
+
+class DailymotionExtractor: public Extractor
 {
-    return url.contains("facebook.com/video.php?v=");
-}
+    Q_OBJECT
 
+public:
+    bool isPlaylist(QString url);
+    static bool isSupported(QString url);
+};
 
-
-bool
-FacebookExtractor::isPlaylist(QString url)
-{
-    return false;
-}
+#endif // DAILYMOTION_EXTRACTOR_H

@@ -34,7 +34,6 @@
 
 
 
-#include "QProcess"
 #include "core/extractor.h"
 
 

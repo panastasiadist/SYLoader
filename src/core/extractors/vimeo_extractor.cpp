@@ -30,15 +30,6 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 #include "vimeo_extractor.h"
-#include <QByteArray>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonValue>
-#include <QJsonArray>
-#include <QMessageBox>
-#include <QFile>
-#include <QList>
-#include <QDebug>
 
 
 

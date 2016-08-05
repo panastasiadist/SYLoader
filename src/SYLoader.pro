@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     core/queue_processor.cpp \
     core/extractors/vimeo_extractor.cpp \
     core/extractors/facebook_extractor.cpp \
-    core/extractor.cpp
+    core/extractor.cpp \
+    core/extractors/dailymotion_extractor.cpp
 
 HEADERS  += \
     core/download.h \
@@ -53,7 +54,8 @@ HEADERS  += \
     core/downloader_progress.h \
     core/output_format.h \
     core/extractors/vimeo_extractor.h \
-    core/extractors/facebook_extractor.h
+    core/extractors/facebook_extractor.h \
+    core/extractors/dailymotion_extractor.h
 
 FORMS    += \
     about_form.ui \

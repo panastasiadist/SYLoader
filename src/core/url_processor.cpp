@@ -35,6 +35,7 @@
 #include "core/extractors/youtube_extractor.h"
 #include "core/extractors/vimeo_extractor.h"
 #include "core/extractors/facebook_extractor.h"
+#include "core/extractors/dailymotion_extractor.h"
 #include "utility.h"
 
 
@@ -58,6 +59,10 @@ UrlProcessor::getExtractor(QString url)
     else if (FacebookExtractor::isSupported(url))
     {
         return new FacebookExtractor();
+    }
+    else if (DailymotionExtractor::isSupported(url))
+    {
+        return new DailymotionExtractor();
     }
     else
     {
@@ -133,7 +138,8 @@ UrlProcessor::isSupported(QString url)
     return
             YoutubeExtractor::isSupported(url) ||
             VimeoExtractor::isSupported(url) ||
-            FacebookExtractor::isSupported(url);
+            FacebookExtractor::isSupported(url) ||
+            DailymotionExtractor::isSupported(url);
 
 }
 

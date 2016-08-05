@@ -29,20 +29,22 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-#include "facebook_extractor.h"
+#include "dailymotion_extractor.h"
 
 
 
 bool
-FacebookExtractor::isSupported(QString url)
+DailymotionExtractor::isSupported(QString url)
 {
-    return url.contains("facebook.com/video.php?v=");
+    return
+            url.contains("dailymotion.com/video/") ||
+            url.contains("dailymotion.com/playlist/");
 }
 
 
 
 bool
-FacebookExtractor::isPlaylist(QString url)
+DailymotionExtractor::isPlaylist(QString url)
 {
-    return false;
+    return url.contains("dailymotion.com/playlist/");
 }
