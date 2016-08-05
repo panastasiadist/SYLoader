@@ -221,6 +221,21 @@ QueueProcessor::running()
 
 
 
+bool
+QueueProcessor::hasDownload(QString downloadSignature)
+{
+    foreach (Downloader *downloader, _idToDownloader.values())
+    {
+        if (downloader->getDownload()->signature == downloadSignature) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+
 DownloaderStats
 QueueProcessor::getStats()
 {

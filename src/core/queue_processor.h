@@ -61,6 +61,7 @@ public:
     bool stop(int id);
     bool stopAll();
     bool running();
+    bool hasDownload(QString downloadSignature);
     void setSavepath(QString path);
     void setAutoProcessing(bool enabled);
     void setConcurrentDownloads(int num);

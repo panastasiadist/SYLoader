@@ -51,6 +51,7 @@ struct Download
     QString videoTitle;
     QString videoExtension;
     QString soundExtension;
+    QString signature;
     OutputFormat outputFormat;
 };
 

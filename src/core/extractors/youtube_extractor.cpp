@@ -72,7 +72,7 @@ YoutubeExtractor::extract(QString url)
 }
 
 
-
+/*
 QString
 YoutubeExtractor::canonicalizeUrl(QString url)
 {
@@ -108,7 +108,7 @@ YoutubeExtractor::canonicalizeUrl(QString url)
         videoQueryItem +
         (listQueryItem.isEmpty() ? "" : "&" + listQueryItem);
 }
-
+*/
 
 
 bool
@@ -166,6 +166,7 @@ YoutubeExtractor::onProcessFinished(int exitCode)
 
         Download download;
 
+        download.signature = "youtube" + eo.value("display_id").toString();
         download.normalUrl = eo.value("webpage_url").toString();
         download.videoTitle = videoTitle;
 
@@ -267,11 +268,11 @@ YoutubeExtractor::onProcessFinished(int exitCode)
             qDebug() << QString("Parsing requirements error for %1. \
                                 Ignoring...")
                         .arg(download.normalUrl);
-
-            continue;
         }
-
-        downloads.append(download);
+        else
+        {
+            downloads.append(download);
+        }
     }
 
     emit finished(exitCode, downloads);

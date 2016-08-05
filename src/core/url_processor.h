@@ -54,7 +54,6 @@ public:
     bool parsing();
     bool isPlaylist(QString url);
     bool isSupported(QString url);
-    QString canonicalizeUrl(QString url);
 
 
 private:
@@ -65,6 +64,7 @@ private:
 
 signals:
     void parsed(QList<Download> downloads);
+
 
 public slots:
     void onExtractorFinished(int result, QList<Download> downloads);

@@ -48,7 +48,7 @@ class Extractor : public QObject
 public:
     virtual void extract(QString) {}
     virtual bool isPlaylist(QString) = 0;
-    virtual QString canonicalizeUrl(QString) = 0;
+    //virtual QString canonicalizeUrl(QString) = 0;
 
 signals:
     void finished(int, QList<Download>);

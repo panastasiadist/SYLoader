@@ -95,27 +95,6 @@ UrlProcessor::parsing()
 
 
 
-QString
-UrlProcessor::canonicalizeUrl(QString url)
-{
-    Extractor* extractor = this->getExtractor(url);
-
-    if (extractor != NULL)
-    {
-        QString res = extractor->canonicalizeUrl(url);
-
-        extractor->deleteLater();
-
-        return res;
-    }
-    else
-    {
-        return url;
-    }
-}
-
-
-
 bool
 UrlProcessor::isPlaylist(QString url)
 {

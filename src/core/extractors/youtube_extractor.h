@@ -46,17 +46,17 @@ class YoutubeExtractor : public Extractor
 
 public:
     YoutubeExtractor();
-    QString canonicalizeUrl(QString url);
 
     void extract(QString url);
     bool isPlaylist(QString url);
-
     static bool isSupported(QString url);
+
 
 private:
     QProcess _process;
     QString _url;
     int _retryCount;
+
 
 public slots:
     void onProcessFinished(int exitCode);
