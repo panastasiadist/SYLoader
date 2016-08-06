@@ -5,8 +5,6 @@
         <file>resources/name.png</file>
         <file>resources/delete-blue.png</file>
         <file>resources/delete-orange.png</file>
-        <file>resources/download-blue.png</file>
-        <file>resources/download-orange.png</file>
         <file>resources/empty-blue.png</file>
         <file>resources/empty-orange.png</file>
         <file>resources/info-blue.png</file>
@@ -19,5 +17,14 @@
         <file>resources/facebook-orange.png</file>
         <file>resources/twitter-blue.png</file>
         <file>resources/twitter-orange.png</file>
+        <file>resources/download-blue.png</file>
+        <file>resources/download-orange.png</file>
+        <file>resources/downloadfolder-blue.png</file>
+        <file>resources/downloadfolder-orange.png</file>
+        <file>resources/downloadfolder-red.png</file>
+        <file>resources/activity-blue.png</file>
+        <file>resources/activity-red.png</file>
+        <file>resources/list-blue.png</file>
+        <file>resources/list-red.png</file>
     </qresource>
 </RCC>

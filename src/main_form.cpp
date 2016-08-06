@@ -29,11 +29,11 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
-
-
 #include <QMessageBox>
-
+#include <QDesktopServices>
+#include <QFileInfo>
+#include <QProcessEnvironment>
+#include <QDir>
 #include "main_form.h"
 #include "ui_main_form.h"
 #include "global.h"
@@ -76,10 +76,20 @@ MainForm::MainForm(QWidget *parent) :
             this,
             SLOT(onDownloadClicked()));
 
+    connect(ui->btnDownloadDirectory,
+            SIGNAL(clicked()),
+            this,
+            SLOT(onDownloadDirectoryClicked()));
+
     connect(ui->cbxMode,
             SIGNAL(currentIndexChanged(int)),
             this,
             SLOT(onModeCurrentIndexChanged(int)));
+
+    connect(ui->tvwDownloads,
+            SIGNAL(doubleClicked(QModelIndex)),
+            this,
+            SLOT(onDownloadListDoubleClicked(QModelIndex)));
 
     connect(QApplication::clipboard(),
             SIGNAL(changed(QClipboard::Mode)),
@@ -116,11 +126,16 @@ MainForm::MainForm(QWidget *parent) :
     _processor.setSavepath(Settings->value("download_path").toString());
     _processor.setConcurrentDownloads(Settings->value("sim_downloads").toInt());
 
-    _downloadsModel.setHorizontalHeaderItem(0, new QStandardItem(tr("Title")));
-    _downloadsModel.setHorizontalHeaderItem(1, new QStandardItem(tr("Status")));
-    _downloadsModel.setHorizontalHeaderItem(2, new QStandardItem(tr("Progress")));
-    _downloadsModel.setHorizontalHeaderItem(3, new QStandardItem(tr("Speed")));
-    _downloadsModel.setHorizontalHeaderItem(4, new QStandardItem(tr("ETA")));
+    _downloadsModel.setHorizontalHeaderItem(0,
+                                            new QStandardItem(tr("Title")));
+    _downloadsModel.setHorizontalHeaderItem(1,
+                                            new QStandardItem(tr("Status")));
+    _downloadsModel.setHorizontalHeaderItem(2,
+                                            new QStandardItem(tr("Progress")));
+    _downloadsModel.setHorizontalHeaderItem(3,
+                                            new QStandardItem(tr("Speed")));
+    _downloadsModel.setHorizontalHeaderItem(4,
+                                            new QStandardItem(tr("ETA")));
 
     ui->tvwDownloads->setModel(&_downloadsModel);
     ui->tvwDownloads->verticalHeader()->setVisible(false);
@@ -303,9 +318,13 @@ void
 MainForm::onDownloadClicked()
 {
     // If downloads in progress, then the button is used as a cancel button.
-    if (_processor.running()) {
+
+    if (_processor.running())
+    {
         _processor.stopAll();
-    } else {
+    }
+    else
+    {
         _processor.process();
     }
 }
@@ -358,8 +377,8 @@ MainForm::onClearClicked()
         QMessageBox::information(
             this,
             tr("Information"),
-            tr("One or more downloads are in progress. \
-               Please cancel them first.")
+            tr("One or more downloads are in progress. "
+               "Please cancel them first.")
         );
         return;
     }
@@ -370,6 +389,38 @@ MainForm::onClearClicked()
     _downloadsModel.removeRows(0, _downloadsModel.rowCount());
 
     ui->btnDownload->setEnabled(false);
+}
+
+
+
+void
+MainForm::onDownloadDirectoryClicked()
+{
+    QString downloadPath = Settings->value("download_path").toString();
+    QDesktopServices::openUrl(QUrl::fromLocalFile(downloadPath));
+}
+
+
+
+void
+MainForm::onDownloadListDoubleClicked(QModelIndex model)
+{
+    int rowIndex = model.row();
+    int downloadId = _idToRowIndex.key(rowIndex);
+
+    Downloader *downloader = _processor.getDownloader(downloadId);
+    Download *download = downloader->getDownload();
+
+    QString outputFilename = download->outputFilename;
+
+#if defined(Q_OS_WIN)
+    QString command = "explorer.exe /select," +
+            QDir::toNativeSeparators(outputFilename);
+
+    QProcess::startDetached(command);
+#else
+    onDownloadDirectoryClicked();
+#endif
 }
 
 
@@ -465,15 +516,15 @@ MainForm::onDownloadsFinished()
     {
         if (statuses.contains(Downloader::ErrorConnection))
         {
-            QString msg = tr("One or more downloads have failed due to \
-                             Internet connection problems. Check your Internet \
-                             connection and try again!");
+            QString msg = tr("One or more downloads have failed due to Internet"
+                             " connection problems. Check your Internet"
+                             " connection and try again!");
             QMessageBox::warning(this, tr("Warning"), msg);
         }
         else if (statuses.contains(Downloader::ErrorIO))
         {
-            QString msg = tr("One or more downloads have failed because their \
-                             conversion failed.");
+            QString msg = tr("One or more downloads have failed because their"
+                             " conversion failed.");
             QMessageBox::warning(this, tr("Warning"), msg);
         }
         else

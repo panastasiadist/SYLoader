@@ -180,8 +180,8 @@ YoutubeExtractor::onProcessFinished(int exitCode)
 
         if (eVideoUrl || eSoundUrl || eTitle || eVideoExtension || eSoundExtension)
         {
-            qDebug() << QString("Parsing requirements error for %1. \
-                                Ignoring...")
+            qDebug() << QString("Parsing requirements error for %1. "
+                                "Ignoring...")
                         .arg(download.normalUrl);
         }
         else

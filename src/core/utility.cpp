@@ -108,14 +108,6 @@ Utility::is64Bit()
 
 
 
-int
-Utility::getMaxThreads()
-{
-    return QThread::idealThreadCount();
-}
-
-
-
 QString
 Utility::cleanFilename(QString desiredFilename)
 {
@@ -123,6 +115,14 @@ Utility::cleanFilename(QString desiredFilename)
 }
 
 #endif
+
+
+
+int
+Utility::getMaxThreads()
+{
+    return QThread::idealThreadCount();
+}
 
 
 

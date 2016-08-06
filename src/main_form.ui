@@ -135,6 +135,35 @@ border-bottom:1px solid #dfdfdf
            <number>14</number>
           </property>
           <item>
+           <widget class="QPushButton" name="btnDownloadDirectory">
+            <property name="minimumSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Show downloads directory</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">#btnDownloadDirectory {border-image: url(:/resources/downloadfolder-orange.png); } 
+#btnDownloadDirectory:hover { border-image: url(:/resources/downloadfolder-blue.png); }</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="btnStart">
             <property name="minimumSize">
              <size>
@@ -147,6 +176,9 @@ border-bottom:1px solid #dfdfdf
               <width>32</width>
               <height>32</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>Download selected video</string>
             </property>
             <property name="styleSheet">
              <string notr="true">#btnStart {border-image: url(:/resources/download-orange.png); } 
@@ -174,6 +206,9 @@ border-bottom:1px solid #dfdfdf
               <height>32</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>Cancel downloading selected video</string>
+            </property>
             <property name="styleSheet">
              <string notr="true">#btnStop {border-image: url(:/resources/stop-orange.png); } 
 #btnStop:hover { border-image: url(:/resources/stop-blue.png); }</string>
@@ -196,6 +231,9 @@ border-bottom:1px solid #dfdfdf
               <width>32</width>
               <height>32</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>Delete only the selected video from the list</string>
             </property>
             <property name="styleSheet">
              <string notr="true">#btnDelete {border-image: url(:/resources/delete-orange.png); } 
@@ -222,6 +260,9 @@ border-bottom:1px solid #dfdfdf
               <width>32</width>
               <height>32</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>Empty the list</string>
             </property>
             <property name="styleSheet">
              <string notr="true">#btnClear {border-image: url(:/resources/empty-orange.png); } 
@@ -251,7 +292,11 @@ border-bottom:1px solid #dfdfdf
          </spacer>
         </item>
         <item>
-         <widget class="QComboBox" name="cbxMode"/>
+         <widget class="QComboBox" name="cbxMode">
+          <property name="toolTip">
+           <string>Choose the file format for your downloaded videos</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="btnDownload">

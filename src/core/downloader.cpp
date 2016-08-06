@@ -372,6 +372,8 @@ Downloader::onDownloadFinished()
             QString extension = _download.outputFormat.extension;
             QString savePath = getOutputPath(filename, extension);
 
+            _download.outputFilename = savePath;
+
 
             if (_videoNetworkReply != NULL && _soundNetworkReply != NULL)
             {
@@ -379,9 +381,9 @@ Downloader::onDownloadFinished()
                 // The video was requested as both streams have been downloaded.
                 // We will merge them into the final video file.
 
-                QString vfilename = _videoFile->fileName(),
-                        sfilename = _soundFile->fileName(),
-                        args = "%1 -i \"%2\" -i \"%3\" %4 \"%5\"";
+                QString vfilename = _videoFile->fileName();
+                QString sfilename = _soundFile->fileName();
+                QString args = "%1 -i \"%2\" -i \"%3\" %4 \"%5\"";
 
                 command = QString(args)
                         .arg(FFMPEG_PATH)
@@ -466,8 +468,8 @@ ErrorProcedure:
     {
         _retryCount++;
 
-        qDebug() << QString("Processor had an error connection. \
-                            Retrying for %1 time in %2 ms")
+        qDebug() << QString("Processor had an error connection. "
+                            "Retrying for %1 time in %2 ms")
                             .arg(QString::number(_retryCount))
                             .arg(QString::number(RETRY_INTERVAL));
 
@@ -485,8 +487,8 @@ ErrorProcedure:
     }
     else
     {
-        qDebug() << QString("Processor had an error connection. \
-                            Max retries of %1 reached")
+        qDebug() << QString("Processor had an error connection. "
+                            "Max retries of %1 reached")
                             .arg(MAX_RETRIES);
 
         setStatus(ErrorConnection);
@@ -524,7 +526,6 @@ Cleanup:
 
         _videoFile = NULL;
     }
-
 }
 
 
@@ -687,13 +688,6 @@ void
 Downloader::download()
 {
     QNetworkRequest request;
-    //request.setRawHeader("Accept", "*/*");
-    //request.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
-    //request.setRawHeader("Accept-Language", "en-US,en;q=0.8");
-    //request.setRawHeader("Accept-Charset", "utf-8");
-    //request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) \
-                         AppleWebKit/537.36 (KHTML, like Gecko) \
-                         Chrome/44.0.2403.125 Safari/537.36");
     request.setRawHeader("Referer", _download.normalUrl.toLatin1().data());
 
     // The timer is used to measure download speed and remaining time by
@@ -799,13 +793,7 @@ Downloader::redirect(QNetworkReply *reply)
 
         QNetworkRequest request;
         request.setUrl(redirect);
-        request.setRawHeader("Accept", "*/*");
-        request.setRawHeader("Accept-Encoding", "gzip, deflate, sdch");
-        request.setRawHeader("Accept-Language", "en-US,en;q=0.8");
-        request.setRawHeader("Accept-Charset", "utf-8");
-        request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64)\
-                             AppleWebKit/537.36 (KHTML, like Gecko) \
-                             Chrome/44.0.2403.125 Safari/537.36");
+        request.setRawHeader("Referer", _download.normalUrl.toLatin1().data());
 
         if (reply == _soundNetworkReply)
         {

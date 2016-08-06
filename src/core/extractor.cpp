@@ -123,8 +123,8 @@ Extractor::onProcessFinished(int exitCode)
 
         if (eVideoUrl || eTitle || eVideoExtension)
         {
-            qDebug() << QString("Parsing requirements error for %1. \
-                                Ignoring...")
+            qDebug() << QString("Parsing requirements error for %1. "
+                                "Ignoring...")
                         .arg(download.normalUrl);
         }
         else

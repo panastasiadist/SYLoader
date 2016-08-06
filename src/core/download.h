@@ -48,6 +48,7 @@ struct Download
     QString title;
     QString coartist;
     QString filename;
+    QString outputFilename;
     QString videoTitle;
     QString videoExtension;
     QString soundExtension;

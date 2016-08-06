@@ -91,6 +91,8 @@ private slots:
     void onStopClicked();
     void onDeleteClicked();
     void onClearClicked();
+    void onDownloadDirectoryClicked();
+    void onDownloadListDoubleClicked(QModelIndex);
     void onModeCurrentIndexChanged(int);
     void onClipboardChanged(QClipboard::Mode mode);
 };

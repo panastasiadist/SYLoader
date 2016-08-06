@@ -113,9 +113,9 @@ MainWindow::MainWindow(QWidget *parent) :
             int msgret = QMessageBox::information(
                 this,
                 tr("New version available!"),
-                tr("SYLoader has a new version available. You should get the \
-                   new version in order to continue downloading. \
-                   Go to downloads page?"),
+                tr("SYLoader has a new version available. You should get the "
+                   "new version in order to continue downloading. "
+                   "Go to downloads page?"),
                 QMessageBox::Ok | QMessageBox::Cancel);
 
             if (msgret == QMessageBox::Ok)
@@ -141,7 +141,8 @@ MainWindow::eventFilter (QObject *object, QEvent *event)
         if (_downloading)
         {
             event->ignore();
-            QString msg = tr("You have one or more downloads in progress. You should cancel them first.");
+            QString msg = tr("You have one or more downloads in progress. "
+                             "You should cancel them first.");
             QMessageBox::information(this, tr("Information"), msg);
             return true;
         }
