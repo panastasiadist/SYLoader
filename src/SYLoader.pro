@@ -69,8 +69,15 @@ RESOURCES += \
 RC_ICONS = logo.ico
 
 # Comment it if you want update check disabled
-# Usefull if you need to have a package manager specific build
+# Useful if you need to have a package manager specific build.
 QMAKE_CXXFLAGS += -DWITH_UPDATE_CHECK
 
-# Comment it if you don't distribute OpenSSL binaries with the software
+# Comment it if you don't distribute OpenSSL binaries with the software.
 QMAKE_CXXFLAGS += -DWITH_OPENSSL_NOTICE
+
+# Comment it if you want to use the globally installed ffmpeg.
+# Useful if you need to have a package manager specific build.
+# If you leave it uncommented, the software will try to call ffmpeg and
+# ffmpeg64 bundled executables depending on the architecture currently running.
+#QMAKE_CXXFLAGS += -DUSE_BUNDLED_FFMPEG
+

@@ -371,6 +371,7 @@ Downloader::onDownloadFinished()
             QString filename = _download.filename;
             QString extension = _download.outputFormat.extension;
             QString savePath = getOutputPath(filename, extension);
+            QString ffmpeg = Utility::getFFmpegFilename();
 
             _download.outputFilename = savePath;
 
@@ -386,7 +387,7 @@ Downloader::onDownloadFinished()
                 QString args = "%1 -i \"%2\" -i \"%3\" %4 \"%5\"";
 
                 command = QString(args)
-                        .arg(FFMPEG_PATH)
+                        .arg(ffmpeg)
                         .arg(vfilename)
                         .arg(sfilename)
                         .arg(iargs)
@@ -423,7 +424,7 @@ Downloader::onDownloadFinished()
                 }
 
                 command = QString("%1 -y -i \"%2\" %3 \"%4\"")
-                        .arg(FFMPEG_PATH)
+                        .arg(ffmpeg)
                         .arg(filename)
                         .arg(iargs)
                         .arg(savePath);

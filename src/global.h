@@ -29,15 +29,16 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
 #ifndef GLOBAL_H
 #define GLOBAL_H
+
 
 
 #include <QSettings>
 #include "core/task_processor.h"
 #include "core/network_gateway.h"
 #include "messenger.h"
+
 
 
 #define SOFTWARE_VERSION_MAJOR 1
@@ -51,18 +52,11 @@
 #define TWITTER_URL "https://twitter.com/hashtag/SYLoader"
 
 
-#if defined(_WIN32)
-    #define FFMPEG_PATH "ffmpeg.exe"
-#else
-    #define FFMPEG_PATH "ffmpeg"
-#endif
-
 
 extern QSettings *Settings;
 extern Messenger *MessageBus;
 extern TaskProcessor *Tasks;
 extern NetworkGateway *Gateway;
-
 
 #endif // GLOBAL_H
 

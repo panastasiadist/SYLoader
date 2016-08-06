@@ -80,6 +80,18 @@ Utility::cleanFilename(QString desiredFilename)
     return desiredFilename.replace(QRegExp("[<>:\"/\\|?*]"), QString("-"));
 }
 
+
+
+QString
+Utility::getFFmpegFilename()
+{
+#ifdef USE_BUNDLED_FFMPEG
+    return Utility::is64Bit() ? "ffmpeg64.exe" : "ffmpeg.exe";
+#else
+    return "ffmpeg.exe";
+#endif
+}
+
 #else
 
 #include <stdio.h>
@@ -112,6 +124,16 @@ QString
 Utility::cleanFilename(QString desiredFilename)
 {
     return desiredFilename.replace(QRegExp("[/]"), QString("-"));
+}
+
+QString
+Utility::getFFmpegFilename()
+{
+#ifdef USE_BUNDLED_FFMPEG
+    return Utility::is64Bit() ? "ffmpeg64" : "ffmpeg";
+#else
+    return "ffmpeg";
+#endif
 }
 
 #endif
