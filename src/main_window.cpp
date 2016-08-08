@@ -40,6 +40,7 @@
 #include "main_form.h"
 #include "settings_form.h"
 #include "about_form.h"
+#include "update_form.h"
 #include "messenger.h"
 #include "updater.h"
 
@@ -56,6 +57,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->gridMain->addWidget(new MainForm());
     ui->gridSettings->addWidget(new SettingsForm());
     ui->gridAbout->addWidget((new AboutForm()));
+    ui->gridUpdates->addWidget(new UpdateForm());
     ui->container->setCurrentIndex(0);
     ui->btnMain->setVisible(false);
 
@@ -103,24 +105,24 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 
-#if defined(WITH_UPDATE_CHECK)
+
+
+#ifdef WITH_UPDATE_CHECK
     if (Settings->value("autocheck_updates", QVariant(true)) == true)
     {
-        bool update;
-        bool error = Updater::checkForUpdates(update);
-        if (error == false && update == true)
-        {
-            int msgret = QMessageBox::information(
-                this,
-                tr("New version available!"),
-                tr("SYLoader has a new version available. You should get the "
-                   "new version in order to continue downloading. "
-                   "Go to downloads page?"),
-                QMessageBox::Ok | QMessageBox::Cancel);
+        updater = new Updater();
 
-            if (msgret == QMessageBox::Ok)
-                QDesktopServices::openUrl(QUrl(DOWNLOADS_URL));
-        }
+        connect(updater,
+                SIGNAL(updateCheckFinished(bool)),
+                this,
+                SLOT(onUpdateCheckFinished(bool)));
+
+        connect(updater,
+                SIGNAL(updateInstallationFinished(bool)),
+                this,
+                SLOT(onUpdateInstallationFinished(bool)));
+
+        updater->check();
     }
 #endif
 
@@ -238,4 +240,79 @@ void
 MainWindow::onTwitterClicked()
 {
     QDesktopServices::openUrl(QUrl(TWITTER_URL));
+}
+
+
+
+void
+MainWindow::onUpdateCheckFinished(bool success)
+{
+    if (success == false) {
+        return;
+    }
+
+    UpdateInfo info = updater->getUpdateData();
+
+    bool ignoreDependencyUpdates = false;
+
+    if (info.ProgramUpdate)
+    {
+        int msgret = QMessageBox::information(
+            this,
+            tr("New version available!"),
+            tr("SYLoader has a new version available. You are advised to "
+               "get the new improved version. Go to download page?"),
+            QMessageBox::Ok | QMessageBox::Cancel);
+
+        if (msgret == QMessageBox::Ok)
+        {
+            ignoreDependencyUpdates = true;
+            this->close();
+            QDesktopServices::openUrl(QUrl(DOWNLOADS_URL));
+        }
+    }
+
+
+    // If a new SYLoader is available, then the new package will contain the
+    // latest version of the dependencies. If the user has chosen to download
+    // the new version, ignore required updates of dependencies.
+
+    if (ignoreDependencyUpdates)
+    {
+        updater->deleteLater();
+        return;
+    }
+
+
+    // There is a required dependency update. Start updating.
+
+    if (info.YdlUpdate)
+    {
+        ui->container->setCurrentIndex(3);
+        ui->btnMain->setVisible(false);
+        ui->btnSettings->setVisible(false);
+        ui->btnAbout->setVisible(false);
+        ui->lblFormTitle->setText(tr("Required Updates"));
+
+        updater->updateYdl();
+    }
+    else
+    {
+        updater->deleteLater();
+    }
+
+}
+
+
+
+void
+MainWindow::onUpdateInstallationFinished(bool success)
+{
+    updater->deleteLater();
+
+    ui->container->setCurrentIndex(0);
+    ui->lblFormTitle->setText(tr("Downloads"));
+    ui->btnMain->setVisible(true);
+    ui->btnSettings->setVisible(true);
+    ui->btnAbout->setVisible(true);
 }

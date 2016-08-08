@@ -29,13 +29,14 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
 #ifndef UPDATER_H
 #define UPDATER_H
 
 
 
 #include <QObject>
+#include <QNetworkReply>
+#include "update_info.h"
 
 
 
@@ -43,12 +44,39 @@ class Updater : public QObject
 {
     Q_OBJECT
 
-private:
-    Updater();
-
-
 public:
-    static bool checkForUpdates(bool &hasUpdate);
+    Updater();
+    UpdateInfo getUpdateData();
+    void check();
+    void updateYdl();
+
+private:
+    UpdateInfo _updateData;
+    QNetworkReply *_networkReply;
+    bool _checkingUpdates;
+    bool _updatingYoutubeDl;
+
+    bool parseVersionString(QString versionStr,
+                            int &major,
+                            int &minor,
+                            int &patch);
+    bool isNewer(int latestMajor,
+                 int latestMinor,
+                 int latestPatch,
+                 int currentMajor,
+                 int currentMinor,
+                 int currentPatch);
+    bool fillProgramUpdateInfo(QJsonObject object);
+    bool fillYoutubeDlUpdateInfo(QJsonObject object);
+
+
+signals:
+    void updateCheckFinished(bool success);
+    void updateInstallationFinished(bool success);
+
+
+private slots:
+    void onNetworkReplyFinished();
 };
 
 

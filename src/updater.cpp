@@ -29,108 +29,301 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
-
-
 #include <QUrl>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QEventLoop>
 #include <QStringList>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QJsonArray>
+#include <QFile>
 #include "updater.h"
 #include "global.h"
 
 
 
-Updater::Updater() {}
+Updater::Updater()
+{
+    _checkingUpdates = false;
+    _updatingYoutubeDl = false;
+}
 
 
 
 bool
-Updater::checkForUpdates(bool &hasUpdate)
+Updater::parseVersionString(QString versionStr,
+                            int &major,
+                            int &minor,
+                            int &patch)
 {
-    // Default.
+    major = 0;
+    minor = 0;
+    patch = 0;
 
-    hasUpdate = false;
-
-
-    // Make a request to fetch the latest version string
-
-    QNetworkReply *updateReply = Gateway->get(
-                QNetworkRequest(QUrl(UPDATE_CHECK_URL)));
-
-
-    // Asynchronously wait for the request to finish before further executing.
-
-    QEventLoop loop;
-    QObject::connect(updateReply, SIGNAL(finished()), &loop, SLOT(quit()));
-    loop.exec();
-
-
-    // The request has finished. Read the content of the URL to buffer.
-
-    QByteArray replyBytes = updateReply->readAll();
-    QString replyString = QString(replyBytes);
-    updateReply->deleteLater();
-
-
-    // The version string returned is of major.minor.patch format where
-    // major, minor, patch are integers. Split the string by dot in order to
-    // get all parts of the version string.
-
-    QStringList versionDigits = replyString.split(".", QString::SkipEmptyParts);
-
-
-    // Examine and compare current and latest version only if the latest version
-    // fetched has exactly three parts (major, minor, patch). Otherwise the
-    // remote version string if malformed (just contact me :P)
-
-    bool hasError = true;
+    QStringList versionDigits = versionStr.split(".", QString::SkipEmptyParts);
 
     if (versionDigits.length() == 3)
     {
-        // Continue only if the three parts of the version string are valid
-        // integers and convert them to integers for further comparisons.
-
         bool majorOk = false;
         bool minorOk = false;
         bool patchOk = false;
 
-        int major = versionDigits.at(0).toInt(&majorOk, 10);
-        int minor = versionDigits.at(1).toInt(&minorOk, 10);
-        int patch = versionDigits.at(2).toInt(&patchOk, 10);
-
-
-        // Now decide if we have the latest version.
+        int tMajor = versionDigits.at(0).toInt(&majorOk, 10);
+        int tMinor = versionDigits.at(1).toInt(&minorOk, 10);
+        int tPatch = versionDigits.at(2).toInt(&patchOk, 10);
 
         if (majorOk && minorOk && patchOk)
         {
-            hasError = false;
+            major = tMajor;
+            minor = tMinor;
+            patch = tPatch;
+            return true;
+        }
+    }
 
-            if (major > SOFTWARE_VERSION_MAJOR)
-            {
+    return false;
+}
+
+
+bool
+Updater::isNewer(int latestMajor,
+                 int latestMinor,
+                 int latestPatch,
+                 int currentMajor,
+                 int currentMinor,
+                 int currentPatch)
+{
+    bool hasUpdate = false;
+
+    if (latestMajor > currentMajor)
+    {
+        hasUpdate = true;
+    }
+    else if (latestMajor == currentMajor)
+    {
+        if (latestMinor > currentMinor)
+        {
+            hasUpdate = true;
+        }
+        else if (latestMinor == currentMinor)
+        {
+            if (latestPatch > currentPatch) {
                 hasUpdate = true;
-            }
-            else if (major == SOFTWARE_VERSION_MAJOR)
-            {
-                if (minor > SOFTWARE_VERSION_MINOR)
-                {
-                    hasUpdate = true;
-                }
-                else if (minor == SOFTWARE_VERSION_MINOR)
-                {
-                    if (patch > SOFTWARE_VERSION_PATCH) {
-                        hasUpdate = true;
-                    }
-                }
             }
         }
     }
 
-
-    // Cleanup and return.
-    delete updateReply;
-    return hasError;
+    return hasUpdate;
 }
 
+
+
+bool
+Updater::fillProgramUpdateInfo(QJsonObject object)
+{
+    QString latestVersionString = object.value("version").toString();
+
+    int latestMajor, latestMinor, latestPatch;
+
+    bool latestVersionParsed = parseVersionString(latestVersionString,
+                                             latestMajor,
+                                             latestMinor,
+                                             latestPatch);
+
+    if (!latestVersionParsed) {
+        return false;
+    }
+
+
+    bool update = isNewer(latestMajor,
+                          latestMinor,
+                          latestPatch,
+                          SOFTWARE_VERSION_MAJOR,
+                          SOFTWARE_VERSION_MINOR,
+                          SOFTWARE_VERSION_PATCH);
+
+    _updateData.ProgramMajor = latestMajor;
+    _updateData.ProgramMinor = latestMinor;
+    _updateData.ProgramPatch = latestPatch;
+    _updateData.ProgramUpdate = update;
+
+    return true;
+}
+
+
+
+bool
+Updater::fillYoutubeDlUpdateInfo(QJsonObject object)
+{
+    QString latestVersionString = object.value("version").toString();
+
+#ifdef _WIN32
+    QString packageUrl = object.value("package_win").toString();
+#else
+    QString packageUrl = object.value("package_lin").toString();
+#endif
+
+    // If youtube-dl version file can't be found, force update of youtube-dl
+
+
+    QString currentVersionString = "0.0.0";
+
+    int latestMajor, latestMinor, latestPatch;
+    int currentMajor, currentMinor, currentPatch;
+
+    QFile file(YOUTUBEDL_VERSION_FILE);
+    if(file.open(QIODevice::ReadOnly)) {
+        QTextStream in(&file);
+        currentVersionString = in.readLine();
+        file.close();
+    }
+
+    bool latestVersionParsed = parseVersionString(latestVersionString,
+                                                  latestMajor,
+                                                  latestMinor,
+                                                  latestPatch);
+
+    bool currentVersionParsed = parseVersionString(currentVersionString,
+                                                   currentMajor,
+                                                   currentMinor,
+                                                   currentPatch);
+
+    if (!latestVersionParsed || !currentVersionParsed) {
+        return false;
+    }
+
+    bool update = isNewer(latestMajor,
+                          latestMinor,
+                          latestPatch,
+                          currentMajor,
+                          currentMinor,
+                          currentPatch);
+
+    _updateData.YdlMajor = latestMajor;
+    _updateData.YdlMinor = latestMinor;
+    _updateData.YdlPatch = latestPatch;
+    _updateData.YdlUpdate = update;
+    _updateData.YdlPackageUrl = packageUrl;
+
+    return true;
+}
+
+
+
+void Updater::check()
+{
+    _checkingUpdates = true;
+
+    QNetworkRequest request(QUrl(UPDATE_CHECK_URL));
+    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+
+    _networkReply = Gateway->get(request);
+
+    connect(_networkReply,
+            SIGNAL(finished()),
+            this,
+            SLOT(onNetworkReplyFinished()));
+}
+
+
+
+UpdateInfo
+Updater::getUpdateData()
+{
+    return _updateData;
+}
+
+
+void
+Updater::updateYdl()
+{
+    _updatingYoutubeDl = true;
+
+    QNetworkRequest request(QUrl(_updateData.YdlPackageUrl));
+    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+
+    _networkReply = Gateway->get(request);
+
+    connect(_networkReply,
+            SIGNAL(finished()),
+            this,
+            SLOT(onNetworkReplyFinished()));
+}
+
+
+
+void
+Updater::onNetworkReplyFinished()
+{
+    QByteArray replyBytes = _networkReply->readAll();
+    _networkReply->deleteLater();
+
+    if (_checkingUpdates)
+    {
+        _checkingUpdates = false;
+
+        QString replyString = QString(replyBytes);
+
+
+        // The answer is a JSON object containing information about the main
+        // components of the software. Grab the node regarding each component
+        // and pass it to the relevant functions for further analysis.
+        // Finally _updateData struct will contain version information about the
+        // components which can used by the rest of the software to initiate the
+        // update procedure.
+
+        QJsonDocument doc = QJsonDocument::fromJson(QString(replyString).toUtf8());
+        QJsonObject odoc = doc.object();
+        QJsonObject syloader = odoc.value("syloader").toObject();
+        QJsonObject youtubedl = odoc.value("youtubedl").toObject();
+
+        bool res1 = fillProgramUpdateInfo(syloader);
+        bool res2 = fillYoutubeDlUpdateInfo(youtubedl);
+
+        if (res1 && res2)
+        {
+            emit updateCheckFinished(true);
+        }
+        else
+        {
+            emit updateCheckFinished(false);
+        }
+    }
+    else if (_updatingYoutubeDl)
+    {
+        _updatingYoutubeDl = false;
+
+        QString version = QString("%1.%2.%3")
+                .arg(_updateData.YdlMajor)
+                .arg(_updateData.YdlMinor)
+                .arg(_updateData.YdlPatch);
+
+        QFile file(YOUTUBEDL_EXECUTABLE);
+        if (file.open(QIODevice::ReadWrite))
+        {
+            file.write(replyBytes);
+            file.close();
+        }
+        else
+        {
+            emit updateInstallationFinished(false);
+        }
+
+        QFile file2(YOUTUBEDL_VERSION_FILE);
+        if (file2.open(QIODevice::ReadWrite))
+        {
+            QTextStream stream(&file2);
+            stream << version;
+            file2.close();
+        }
+        else
+        {
+            emit updateInstallationFinished(false);
+        }
+
+        emit updateInstallationFinished(true);
+    }
+}

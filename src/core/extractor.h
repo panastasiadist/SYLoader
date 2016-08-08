@@ -35,6 +35,7 @@
 
 
 #include "download.h"
+#include "global.h"
 #include <QObject>
 #include <QString>
 #include <QList>

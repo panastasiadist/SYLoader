@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     core/extractors/vimeo_extractor.cpp \
     core/extractors/facebook_extractor.cpp \
     core/extractor.cpp \
-    core/extractors/dailymotion_extractor.cpp
+    core/extractors/dailymotion_extractor.cpp \
+    update_form.cpp
 
 HEADERS  += \
     core/download.h \
@@ -55,13 +56,16 @@ HEADERS  += \
     core/output_format.h \
     core/extractors/vimeo_extractor.h \
     core/extractors/facebook_extractor.h \
-    core/extractors/dailymotion_extractor.h
+    core/extractors/dailymotion_extractor.h \
+    update_info.h \
+    update_form.h
 
 FORMS    += \
     about_form.ui \
     main_form.ui \
     main_window.ui \
-    settings_form.ui
+    settings_form.ui \
+    update_form.ui
 
 RESOURCES += \
     resources.qrc
@@ -69,15 +73,14 @@ RESOURCES += \
 RC_ICONS = logo.ico
 
 # Comment it if you want update check disabled
-# Useful if you need to have a package manager specific build.
+# Useful if you need to have a package manager aware build.
 QMAKE_CXXFLAGS += -DWITH_UPDATE_CHECK
 
 # Comment it if you don't distribute OpenSSL binaries with the software.
 QMAKE_CXXFLAGS += -DWITH_OPENSSL_NOTICE
 
 # Comment it if you want to use the globally installed ffmpeg.
-# Useful if you need to have a package manager specific build.
+# Useful if you need to have a package manager aware build.
 # If you leave it uncommented, the software will try to call ffmpeg and
 # ffmpeg64 bundled executables depending on the architecture currently running.
 #QMAKE_CXXFLAGS += -DUSE_BUNDLED_FFMPEG
-

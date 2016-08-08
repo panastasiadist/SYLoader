@@ -38,6 +38,7 @@
 #include <QMainWindow>
 #include <QList>
 #include <QClipboard>
+#include "updater.h"
 #include "core/download.h"
 #include "core/downloader.h"
 #include "core/downloader_stats.h"
@@ -59,6 +60,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    Updater *updater;
     bool _downloading;
     bool eventFilter (QObject *object, QEvent *event);
 
@@ -69,6 +71,8 @@ private slots:
     void onAboutClicked();
     void onFacebookClicked();
     void onTwitterClicked();
+    void onUpdateCheckFinished(bool success);
+    void onUpdateInstallationFinished(bool success);
 };
 
 

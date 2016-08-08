@@ -55,11 +55,14 @@ Extractor::Extractor()
 void
 Extractor::extract(QString url)
 {
-    QString ydlExecutable = "youtube-dl";
     QString format = "%1 --no-warnings --no-cache-dir --prefer-insecure \
             --no-check-certificate -i -J \"%2\"";
 
-    _process.start(QString(format).arg(ydlExecutable, url));
+    QString command = QString(format)
+            .arg(YOUTUBEDL_EXECUTABLE)
+            .arg(url);
+
+    _process.start(command);
 
     return;
 }
