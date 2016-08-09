@@ -1,30 +1,28 @@
 <RCC>
     <qresource prefix="/">
-        <file>resources/header.png</file>
-        <file>resources/logo.png</file>
+        <file>resources/activity.png</file>
+        <file>resources/activity-hover.png</file>
+        <file>resources/delete.png</file>
+        <file>resources/delete-hover.png</file>
+        <file>resources/download.png</file>
+        <file>resources/downloadfolder.png</file>
+        <file>resources/downloadfolder-hover.png</file>
+        <file>resources/download-hover.png</file>
+        <file>resources/empty.png</file>
+        <file>resources/empty-hover.png</file>
+        <file>resources/facebook.png</file>
+        <file>resources/facebook-hover.png</file>
+        <file>resources/info.png</file>
+        <file>resources/info-hover.png</file>
+        <file>resources/list.png</file>
+        <file>resources/logo.jpg</file>
         <file>resources/name.png</file>
-        <file>resources/delete-blue.png</file>
-        <file>resources/delete-orange.png</file>
-        <file>resources/empty-blue.png</file>
-        <file>resources/empty-orange.png</file>
-        <file>resources/info-blue.png</file>
-        <file>resources/info-orange.png</file>
-        <file>resources/settings-blue.png</file>
-        <file>resources/settings-orange.png</file>
-        <file>resources/stop-blue.png</file>
-        <file>resources/stop-orange.png</file>
-        <file>resources/facebook-blue.png</file>
-        <file>resources/facebook-orange.png</file>
-        <file>resources/twitter-blue.png</file>
-        <file>resources/twitter-orange.png</file>
-        <file>resources/download-blue.png</file>
-        <file>resources/download-orange.png</file>
-        <file>resources/downloadfolder-blue.png</file>
-        <file>resources/downloadfolder-orange.png</file>
-        <file>resources/downloadfolder-red.png</file>
-        <file>resources/activity-blue.png</file>
-        <file>resources/activity-red.png</file>
-        <file>resources/list-blue.png</file>
-        <file>resources/list-red.png</file>
+        <file>resources/settings.png</file>
+        <file>resources/settings-hover.png</file>
+        <file>resources/stop.png</file>
+        <file>resources/stop-hover.png</file>
+        <file>resources/twitter.png</file>
+        <file>resources/twitter-hover.png</file>
+        <file>resources/list-hover.png</file>
     </qresource>
 </RCC>

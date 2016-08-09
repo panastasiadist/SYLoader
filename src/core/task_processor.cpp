@@ -29,9 +29,6 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
-
-
 #include "task_processor.h"
 
 
@@ -67,11 +64,13 @@ TaskProcessor::abort(int pid)
     if (p != NULL)
     {
         // It will raise finished event
+
         p->kill();
     }
     else
     {
         // The process hasn't run. We will emit the event.
+
         _commands.remove(pid);
         emit statusChanged(Finished, pid, 0);
     }

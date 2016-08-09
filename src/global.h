@@ -42,14 +42,14 @@
 
 
 #define SOFTWARE_VERSION_MAJOR 1
-#define SOFTWARE_VERSION_MINOR 0
+#define SOFTWARE_VERSION_MINOR 1
 #define SOFTWARE_VERSION_PATCH 0
-//#define UPDATE_CHECK_URL "http://panastasiadist.github.io/SYLoader/lversion.html"
-#define UPDATE_CHECK_URL "http://frenzyprojects.com/lversion.json"
+#define UPDATE_CHECK_URL "http://panastasiadist.github.io/SYLoader/lversion.json"
 #define HOMEPAGE_URL "http://panastasiadist.github.io/SYLoader"
 #define DOWNLOADS_URL "http://panastasiadist.github.io/SYLoader"
 #define CONTACT_URL "https://twitter.com/panastasiadist"
-#define FACEBOOK_URL "https://www.facebook.com/pages/SYLoader/1684668085090102"
+#define FACEBOOK_URL "https://www.facebook.com/syloader"
+#define FACEBOOK_APP_ID 879728422080247
 #define TWITTER_URL "https://twitter.com/hashtag/SYLoader"
 
 #ifdef _WIN32

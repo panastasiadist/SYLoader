@@ -29,9 +29,6 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
-
-
 #include <QDesktopServices>
 #include <QMessageBox>
 #include <QUrl>
@@ -63,6 +60,13 @@ AboutForm::AboutForm(QWidget *parent) :
              SIGNAL(clicked()),
              this,
              SLOT(onLicenseClicked()));
+
+    QString version = QString("SYLoader %1.%2.%3")
+            .arg(SOFTWARE_VERSION_MAJOR)
+            .arg(SOFTWARE_VERSION_MINOR)
+            .arg(SOFTWARE_VERSION_PATCH);
+
+    ui->lblVersion->setText(version);
 
 #if defined(WITH_OPENSSL_NOTICE)
     ui->lblOpenSSLNotice->setVisible(true);

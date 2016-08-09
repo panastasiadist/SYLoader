@@ -1,16 +1,9 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2015-07-25T20:00:54
-#
-#-------------------------------------------------
-
 QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = SYLoader
 TEMPLATE = app
-
 
 SOURCES += main.cpp\
     core/utility.cpp \

@@ -29,9 +29,6 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
-
-
 #include <QDesktopServices>
 #include <QMessageBox>
 #include "main_window.h"
@@ -60,7 +57,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->gridUpdates->addWidget(new UpdateForm());
     ui->container->setCurrentIndex(0);
     ui->btnMain->setVisible(false);
-
 
     restoreGeometry(Settings->value("window_geometry").toByteArray());
     restoreState(Settings->value("window_state").toByteArray());
@@ -97,11 +93,13 @@ MainWindow::MainWindow(QWidget *parent) :
             SLOT(onMessageBusReceive(QString)));
 
 
-
     this->installEventFilter(this);
 
     //this->setGeometry(20,20,370,220);
     //this->setGeometry(20,20,700,416);
+
+    // For website screenshot
+    //this->setGeometry(20, 20, 858, 477);
 
 
 
@@ -128,7 +126,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->statusBar->showMessage(
         tr("Download by copying YouTube URLs in your browser!"));
-
 }
 
 
@@ -223,7 +220,6 @@ MainWindow::onAboutClicked()
     ui->container->setCurrentIndex(2);
     ui->btnMain->setVisible(true);
     ui->lblFormTitle->setText(tr("About"));
-
 }
 
 

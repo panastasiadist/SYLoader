@@ -29,7 +29,6 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
 #ifndef MESSENGER_H
 #define MESSENGER_H
 

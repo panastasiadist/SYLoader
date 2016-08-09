@@ -29,9 +29,6 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
-
-
 #include "network_gateway.h"
 
 // The maximum number of requests a manager will concurrently handle before

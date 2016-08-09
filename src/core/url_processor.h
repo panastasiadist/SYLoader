@@ -29,7 +29,6 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
 #ifndef URL_PROCESSOR_H
 #define URL_PROCESSOR_H
 

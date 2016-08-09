@@ -126,26 +126,34 @@ MainForm::MainForm(QWidget *parent) :
     _processor.setSavepath(Settings->value("download_path").toString());
     _processor.setConcurrentDownloads(Settings->value("sim_downloads").toInt());
 
-    _downloadsModel.setHorizontalHeaderItem(0,
-                                            new QStandardItem(tr("Title")));
-    _downloadsModel.setHorizontalHeaderItem(1,
-                                            new QStandardItem(tr("Status")));
-    _downloadsModel.setHorizontalHeaderItem(2,
-                                            new QStandardItem(tr("Progress")));
-    _downloadsModel.setHorizontalHeaderItem(3,
-                                            new QStandardItem(tr("Speed")));
-    _downloadsModel.setHorizontalHeaderItem(4,
-                                            new QStandardItem(tr("ETA")));
+
+
+    QStandardItem *titleHeaderItem = new QStandardItem(tr("Title"));
+    QStandardItem *statusHeaderItem = new QStandardItem(tr("Status"));
+    QStandardItem *progressHeaderItem = new QStandardItem(tr("Progress"));
+    QStandardItem *speedHeaderItem = new QStandardItem(tr("Speed"));
+    QStandardItem *etaHeaderItem = new QStandardItem(tr("ETA"));
+
+    statusHeaderItem->setTextAlignment(Qt::AlignHCenter);
+    progressHeaderItem->setTextAlignment(Qt::AlignHCenter);
+    speedHeaderItem->setTextAlignment(Qt::AlignHCenter);
+    etaHeaderItem->setTextAlignment(Qt::AlignHCenter);
+
+    _downloadsModel.setHorizontalHeaderItem(0, titleHeaderItem);
+    _downloadsModel.setHorizontalHeaderItem(1, statusHeaderItem);
+    _downloadsModel.setHorizontalHeaderItem(2, progressHeaderItem);
+    _downloadsModel.setHorizontalHeaderItem(3, speedHeaderItem);
+    _downloadsModel.setHorizontalHeaderItem(4, etaHeaderItem);
 
     ui->tvwDownloads->setModel(&_downloadsModel);
     ui->tvwDownloads->verticalHeader()->setVisible(false);
     ui->tvwDownloads->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tvwDownloads->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->tvwDownloads->setColumnWidth(0, 300);
-    ui->tvwDownloads->setColumnWidth(1, 90);
-    ui->tvwDownloads->setColumnWidth(2, 80);
-    ui->tvwDownloads->setColumnWidth(3, 70);
-    ui->tvwDownloads->setColumnWidth(4, 70);
+    ui->tvwDownloads->setColumnWidth(0, 550);
+    ui->tvwDownloads->setColumnWidth(1, 100);
+    ui->tvwDownloads->setColumnWidth(2, 100);
+    ui->tvwDownloads->setColumnWidth(3, 100);
+    ui->tvwDownloads->setColumnWidth(4, 100);
     ui->tvwDownloads->setItemDelegate(&_progressItemDelegate);
 
 
@@ -529,8 +537,34 @@ MainForm::onDownloadsFinished()
         }
         else
         {
-            QString msg = tr("Hooray! Your downloads have been completed.");
-            QMessageBox::information(this, tr("Information"), msg);
+            if (Settings->value("first_download", QVariant(true)) == true)
+            {
+                Settings->setValue("first_download", QVariant(false));
+                Settings->sync();
+
+                int msgret = QMessageBox::information(
+                    this,
+                    tr("Congratulations!"),
+                    tr("You have completed your first download. Would you "
+                       "like to support SYLoader by telling your friends?"),
+                    QMessageBox::Ok | QMessageBox::Cancel);
+
+                if (msgret == QMessageBox::Ok)
+                {
+                    QString fbShareUrl = QString(
+                            "https://www.facebook.com/dialog/feed?"
+                            "app_id=%1&display=popup&link=%2")
+                            .arg(FACEBOOK_APP_ID)
+                            .arg(FACEBOOK_URL);
+
+                    QDesktopServices::openUrl(QUrl(fbShareUrl));
+                }
+            }
+            else
+            {
+                QString msg = tr("Hooray! Your downloads have been completed.");
+                QMessageBox::information(this, tr("Information"), msg);
+            }
         }
     }
 }
@@ -553,12 +587,23 @@ MainForm::onParserFinished(QList<Download> downloads)
             continue;
         }
 
+        QStandardItem *titleItem = new QStandardItem(d.videoTitle);
+        QStandardItem *statusItem = new QStandardItem("");
+        QStandardItem *progressItem = new QStandardItem("");
+        QStandardItem *speedItem = new QStandardItem("");
+        QStandardItem *etaItem = new QStandardItem("");
+
+        statusItem->setTextAlignment(Qt::AlignHCenter);
+        progressItem->setTextAlignment(Qt::AlignHCenter);
+        speedItem->setTextAlignment(Qt::AlignHCenter);
+        etaItem->setTextAlignment(Qt::AlignHCenter);
+
         QList<QStandardItem *> list;
-        list << new QStandardItem(d.videoTitle);
-        list << new QStandardItem("");
-        list << new QStandardItem("");
-        list << new QStandardItem("");
-        list << new QStandardItem("");
+        list << titleItem;
+        list << statusItem;
+        list << progressItem;
+        list << speedItem;
+        list << etaItem;
 
         list.at(0)->setEditable(false);
         list.at(1)->setEditable(false);

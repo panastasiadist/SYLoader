@@ -109,6 +109,11 @@
      </property>
      <item row="3" column="0">
       <widget class="QWidget" name="frameBottom" native="true">
+       <property name="font">
+        <font>
+         <family>Segoe UI</family>
+        </font>
+       </property>
        <property name="styleSheet">
         <string notr="true">#frameBottom {
 /*background-color: rgb(245, 245, 245);*/
@@ -152,8 +157,8 @@ border-bottom:1px solid #dfdfdf
              <string>Show downloads directory</string>
             </property>
             <property name="styleSheet">
-             <string notr="true">#btnDownloadDirectory {border-image: url(:/resources/downloadfolder-orange.png); } 
-#btnDownloadDirectory:hover { border-image: url(:/resources/downloadfolder-blue.png); }</string>
+             <string notr="true">#btnDownloadDirectory {border-image: url(:/resources/downloadfolder.png); } 
+#btnDownloadDirectory:hover { border-image: url(:/resources/downloadfolder-hover.png); }</string>
             </property>
             <property name="text">
              <string/>
@@ -181,8 +186,8 @@ border-bottom:1px solid #dfdfdf
              <string>Download selected video</string>
             </property>
             <property name="styleSheet">
-             <string notr="true">#btnStart {border-image: url(:/resources/download-orange.png); } 
-#btnStart:hover { border-image: url(:/resources/download-blue.png); }</string>
+             <string notr="true">#btnStart {border-image: url(:/resources/download.png); } 
+#btnStart:hover { border-image: url(:/resources/download-hover.png); }</string>
             </property>
             <property name="text">
              <string/>
@@ -210,8 +215,8 @@ border-bottom:1px solid #dfdfdf
              <string>Cancel downloading selected video</string>
             </property>
             <property name="styleSheet">
-             <string notr="true">#btnStop {border-image: url(:/resources/stop-orange.png); } 
-#btnStop:hover { border-image: url(:/resources/stop-blue.png); }</string>
+             <string notr="true">#btnStop {border-image: url(:/resources/stop.png); } 
+#btnStop:hover { border-image: url(:/resources/stop-hover.png); }</string>
             </property>
             <property name="flat">
              <bool>true</bool>
@@ -236,8 +241,8 @@ border-bottom:1px solid #dfdfdf
              <string>Delete only the selected video from the list</string>
             </property>
             <property name="styleSheet">
-             <string notr="true">#btnDelete {border-image: url(:/resources/delete-orange.png); } 
-#btnDelete:hover { border-image: url(:/resources/delete-blue.png); }</string>
+             <string notr="true">#btnDelete {border-image: url(:/resources/delete.png); } 
+#btnDelete:hover { border-image: url(:/resources/delete-hover.png); }</string>
             </property>
             <property name="text">
              <string/>
@@ -265,8 +270,8 @@ border-bottom:1px solid #dfdfdf
              <string>Empty the list</string>
             </property>
             <property name="styleSheet">
-             <string notr="true">#btnClear {border-image: url(:/resources/empty-orange.png); } 
-#btnClear:hover { border-image: url(:/resources/empty-blue.png); }</string>
+             <string notr="true">#btnClear {border-image: url(:/resources/empty.png); } 
+#btnClear:hover { border-image: url(:/resources/empty-hover.png); }</string>
             </property>
             <property name="text">
              <string/>
@@ -293,6 +298,17 @@ border-bottom:1px solid #dfdfdf
         </item>
         <item>
          <widget class="QComboBox" name="cbxMode">
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Segoe UI</family>
+           </font>
+          </property>
           <property name="toolTip">
            <string>Choose the file format for your downloaded videos</string>
           </property>
@@ -300,6 +316,19 @@ border-bottom:1px solid #dfdfdf
         </item>
         <item>
          <widget class="QPushButton" name="btnDownload">
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Segoe UI</family>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
           <property name="text">
            <string>Download</string>
           </property>

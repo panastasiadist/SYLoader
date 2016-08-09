@@ -29,7 +29,6 @@
  * version. If you delete this exception statement from all source
  * files in the program, then also delete it here.
  ******************************************************************************/
-
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -38,6 +37,7 @@
 #include <QMainWindow>
 #include <QList>
 #include <QClipboard>
+#include <QVariant>
 #include "updater.h"
 #include "core/download.h"
 #include "core/downloader.h"
