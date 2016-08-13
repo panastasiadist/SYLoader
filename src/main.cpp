@@ -60,7 +60,7 @@ main(int argc, char *argv[])
     QApplication::setOrganizationName("SYLoader");
 
     int maxThreads = Utility::getMaxThreads() - 1;
-    if (maxThreads == 0) {
+    if (maxThreads < 2) {
         maxThreads = 1;
     }
 

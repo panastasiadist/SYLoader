@@ -346,7 +346,7 @@ Downloader::onDownloadFinished()
             }
 
 
-            QString iargs = " -id3v2_version 3 -write_id3v1 1 ";
+            QString iargs = "-threads 1 -id3v2_version 3 -write_id3v1 1 ";
 
             bool hasArtist = !_download.artist.isEmpty();
             bool hasTitle = !_download.title.isEmpty();
