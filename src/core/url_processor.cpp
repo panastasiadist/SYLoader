@@ -153,18 +153,16 @@ UrlProcessor::onExtractorFinished(int result, QList<Download> downloads)
     extractor->deleteLater();
     _extractors.removeOne(extractor);
 
+    QList<Download> temp;
+
     if (result == 0)
     {
-        QList<Download> temp;
-
         foreach(Download d, downloads) {
             temp.append(Utility::decorateDownload(d));
         }
-
-        extractor->deleteLater();
-
-        emit parsed(temp);
     }
+
+    emit parsed(temp);
 
     return;
 }
