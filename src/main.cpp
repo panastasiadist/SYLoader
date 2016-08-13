@@ -116,7 +116,7 @@ main(int argc, char *argv[])
 
         bool applySystemLanguage = false;
 
-        QDir directory (QString("languages"), QString("*.qm"));
+        QDir directory (QString("translations"), QString("*.qm"));
         QStringList languages = directory.entryList();
 
         foreach (QString language, languages)
@@ -134,12 +134,12 @@ main(int argc, char *argv[])
 
         if (applySystemLanguage)
         {
-            translator.load(QString("languages/%1.qm").arg(systemLanguage));
+            translator.load(QString("translations/%1.qm").arg(systemLanguage));
             Settings->setValue("language", systemLanguage);
         }
     }
     else {
-        translator.load(QString("languages/%1.qm").arg(language));
+        translator.load(QString("translations/%1.qm").arg(language));
     }
 
 

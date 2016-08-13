@@ -63,7 +63,7 @@ SettingsForm::SettingsForm(QWidget *parent) :
 
     // Load languages found in languages directory
 
-    QDir directory (QString("languages"), QString("*.qm"));
+    QDir directory (QString("translations"), QString("*.qm"));
     QStringList languages = directory.entryList();
     foreach (QString language, languages)
     {

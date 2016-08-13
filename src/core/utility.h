@@ -47,7 +47,6 @@ private:
 
 
 public:
-    static bool is64Bit();
     static int getMaxThreads();
     static QString cleanFilename(QString desiredFilename);
     static Download decorateDownload(Download download);

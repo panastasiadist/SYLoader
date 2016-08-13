@@ -37,37 +37,8 @@
 
 
 
-#ifdef _WIN32
+#ifdef Q_OS_WIN32
 #include <windows.h>
-
-typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
-
-LPFN_ISWOW64PROCESS fnIsWow64Process;
-
-
-
-bool
-Utility::is64Bit()
-{
-    BOOL bIsWow64 = FALSE;
-
-    // IsWow64Process is not available on all supported versions of Windows.
-    // Use GetModuleHandle to get a handle to the DLL that contains the function
-    // and GetProcAddress to get a pointer to the function if available.
-
-    fnIsWow64Process = (LPFN_ISWOW64PROCESS) GetProcAddress(
-        GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
-
-    if(NULL != fnIsWow64Process)
-    {
-        if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64))
-        {
-            return false;
-        }
-    }
-
-    return bIsWow64;
-}
 
 
 
@@ -82,11 +53,7 @@ Utility::cleanFilename(QString desiredFilename)
 QString
 Utility::getFFmpegFilename()
 {
-#ifdef USE_BUNDLED_FFMPEG
-    return Utility::is64Bit() ? "ffmpeg64.exe" : "ffmpeg.exe";
-#else
     return "ffmpeg.exe";
-#endif
 }
 
 #else
@@ -97,40 +64,18 @@ Utility::getFFmpegFilename()
 
 
 
-bool
-Utility::is64Bit()
-{
-    utsname unameStruct;
-
-    personality(PER_LINUX);
-    uname(&unameStruct);
-
-    if (strcmp(unameStruct.machine, "x86_64") == 0)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-
-
 QString
 Utility::cleanFilename(QString desiredFilename)
 {
     return desiredFilename.replace(QRegExp("[/]"), QString("-"));
 }
 
+
+
 QString
 Utility::getFFmpegFilename()
 {
-#ifdef USE_BUNDLED_FFMPEG
-    return Utility::is64Bit() ? "ffmpeg64" : "ffmpeg";
-#else
     return "ffmpeg";
-#endif
 }
 
 #endif

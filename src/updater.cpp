@@ -160,7 +160,7 @@ Updater::fillYoutubeDlUpdateInfo(QJsonObject object)
 {
     QString latestVersionString = object.value("version").toString();
 
-#ifdef _WIN32
+#ifdef Q_OS_WIN32
     QString packageUrl = object.value("package_win").toString();
 #else
     QString packageUrl = object.value("package_lin").toString();

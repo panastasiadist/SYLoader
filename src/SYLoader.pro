@@ -1,6 +1,4 @@
-QT       += core gui network
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += core gui network widgets
 
 TARGET = SYLoader
 TEMPLATE = app
@@ -26,7 +24,7 @@ SOURCES += main.cpp\
     core/extractors/dailymotion_extractor.cpp \
     update_form.cpp
 
-HEADERS  += \
+HEADERS += \
     core/download.h \
     global.h \
     updater.h \
@@ -53,7 +51,7 @@ HEADERS  += \
     update_info.h \
     update_form.h
 
-FORMS    += \
+FORMS += \
     about_form.ui \
     main_form.ui \
     main_window.ui \
@@ -71,9 +69,3 @@ QMAKE_CXXFLAGS += -DWITH_UPDATE_CHECK
 
 # Comment it if you don't distribute OpenSSL binaries with the software.
 QMAKE_CXXFLAGS += -DWITH_OPENSSL_NOTICE
-
-# Comment it if you want to use the globally installed ffmpeg.
-# Useful if you need to have a package manager aware build.
-# If you leave it uncommented, the software will try to call ffmpeg and
-# ffmpeg64 bundled executables depending on the architecture currently running.
-#QMAKE_CXXFLAGS += -DUSE_BUNDLED_FFMPEG

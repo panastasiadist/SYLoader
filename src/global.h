@@ -47,12 +47,12 @@
 #define UPDATE_CHECK_URL "http://panastasiadist.github.io/SYLoader/lversion.json"
 #define HOMEPAGE_URL "http://panastasiadist.github.io/SYLoader"
 #define DOWNLOADS_URL "http://panastasiadist.github.io/SYLoader"
-#define CONTACT_URL "https://twitter.com/panastasiadist"
+#define CONTACT_URL "http://panastasiadist.github.io"
 #define FACEBOOK_URL "https://www.facebook.com/syloader"
 #define FACEBOOK_APP_ID 879728422080247
 #define TWITTER_URL "https://twitter.com/hashtag/SYLoader"
 
-#ifdef _WIN32
+#ifdef Q_OS_WIN32
 #define YOUTUBEDL_EXECUTABLE "youtube-dl.exe"
 #else
 #define YOUTUBEDL_EXECUTABLE "youtube-dl"

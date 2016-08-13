@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="el" sourcelanguage="el">
+<TS version="2.1">
 <context>
     <name>AboutForm</name>
     <message>
@@ -22,6 +22,11 @@
         <location filename="aboutform.ui" line="195"/>
         <source>Brought to you by Panagiotis Anastasiadis. SYLoader is dedicated to a special girl so she downloads her favorite songs :) Enjoy!</source>
         <translation type="unfinished">Φτιαγμένο από τον Παναγιώτη Αναστασιάδη. Ο SYLoader είναι αφιερωμένος σε ένα ιδιαίτερο κορίτσι ώστε να κατεβάζει τα αγαπημένα της τραγούδια. Διασκεδάστε!</translation>
+    </message>
+    <message>
+        <location filename="../about_form.ui" line="98"/>
+        <source>SYLoader</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../about_form.ui" line="98"/>
@@ -314,6 +319,11 @@
         <translation type="unfinished">Λήψεις</translation>
     </message>
     <message>
+        <location filename="mainwindow.cpp" line="67"/>
+        <source>SYLoader has a new version available. You should get the new version in order to continue downloading. Go to downloads page?</source>
+        <translation type="unfinished">Μια νέα έκδοση του SYLoader είναι διαθέσιμη. Συνίσταται να κατεβάσετε τη νέα έκδοση. Λήψη?</translation>
+    </message>
+    <message>
         <location filename="mainwindow.cpp" line="78"/>
         <location filename="mainwindow.cpp" line="118"/>
         <source>Download by copying YouTube URLs in your browser!</source>
@@ -323,11 +333,6 @@
         <location filename="../mainwindow.cpp" line="143"/>
         <source>You have one or more downloads in progress. You should cancel them first.</source>
         <translation type="unfinished">Μια ή περισσότερες λήψεις είναι σε εξέλιξη. Θα πρέπει να τις σταματήσετε πρώτα.</translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="67"/>
-        <source>SYLoader has a new version available. You should get the new version in order to continue downloading. Go to downloads page?</source>
-        <translation type="unfinished">Μια νέα έκδοση του SYLoader είναι διαθέσιμη. Συνίσταται να κατεβάσετε τη νέα έκδοση. Λήψη?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="92"/>

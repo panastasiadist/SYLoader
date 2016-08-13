@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1">
+<TS version="2.1" language="es" sourcelanguage="es">
 <context>
     <name>AboutForm</name>
     <message>
@@ -25,13 +25,18 @@
     </message>
     <message>
         <location filename="../about_form.ui" line="98"/>
+        <source>SYLoader</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../about_form.ui" line="98"/>
         <source>SYLoader 2016.08.09</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../about_form.ui" line="105"/>
         <source>Brought to you by Panagiotis Anastasiadis. SYLoader is dedicated to a special girl. Enjoy!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Traido a ti por Panagiotis Anastasiadis. SYLoader es dedicado a una chica especial. Disfrútalo!</translation>
     </message>
     <message>
         <location filename="../aboutform.ui" line="288"/>
@@ -84,32 +89,32 @@
     <message>
         <location filename="../main_form.ui" line="152"/>
         <source>Show downloads directory</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mostrar carpeta de descargas</translation>
     </message>
     <message>
         <location filename="../main_form.ui" line="181"/>
         <source>Download selected video</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Descargar el video seleccionado</translation>
     </message>
     <message>
         <location filename="../main_form.ui" line="210"/>
         <source>Cancel downloading selected video</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cancelar descarga del video seleccionado</translation>
     </message>
     <message>
         <location filename="../main_form.ui" line="236"/>
         <source>Delete only the selected video from the list</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Borrar solamente el video seleccionado de la lista</translation>
     </message>
     <message>
         <location filename="../main_form.ui" line="265"/>
         <source>Empty the list</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Vaciar la lista</translation>
     </message>
     <message>
         <location filename="../main_form.ui" line="297"/>
         <source>Choose the file format for your downloaded videos</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Elige el formato para tu video descargado</translation>
     </message>
     <message>
         <location filename="../mainform.ui" line="270"/>
@@ -145,27 +150,27 @@
     <message>
         <location filename="../main_form.cpp" line="153"/>
         <source>MP3 Music</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">MP3 Música</translation>
     </message>
     <message>
         <location filename="../main_form.cpp" line="159"/>
         <source>MP4 Video</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">MP4 Video</translation>
     </message>
     <message>
         <location filename="../main_form.cpp" line="165"/>
         <source>AVI Video</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">AVI Video</translation>
     </message>
     <message>
         <location filename="../main_form.cpp" line="171"/>
         <source>OGG Music</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">OGG Música</translation>
     </message>
     <message>
         <location filename="../main_form.cpp" line="177"/>
         <source>OGV Video</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">OGV Video</translation>
     </message>
     <message>
         <location filename="../mainform.cpp" line="193"/>
@@ -205,37 +210,37 @@
     <message>
         <location filename="../main_form.cpp" line="438"/>
         <source>Queued</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">En cola</translation>
     </message>
     <message>
         <location filename="../main_form.cpp" line="441"/>
         <source>Downloading</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Descargando</translation>
     </message>
     <message>
         <location filename="../main_form.cpp" line="444"/>
         <source>Converting</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Convirtiendo</translation>
     </message>
     <message>
         <location filename="../main_form.cpp" line="447"/>
         <source>Complete</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Completo</translation>
     </message>
     <message>
         <location filename="../main_form.cpp" line="450"/>
         <source>I/O Error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">I/O Error</translation>
     </message>
     <message>
         <location filename="../main_form.cpp" line="453"/>
         <source>Connection Error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Error de conexión</translation>
     </message>
     <message>
         <location filename="../main_form.cpp" line="456"/>
         <source>Canceled</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cancelado</translation>
     </message>
     <message>
         <location filename="../mainform.cpp" line="415"/>
@@ -261,12 +266,12 @@
     <message>
         <location filename="../main_form.cpp" line="536"/>
         <source>Congratulations!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Felicitaciones!</translation>
     </message>
     <message>
         <location filename="../main_form.cpp" line="537"/>
         <source>You have completed your first download. Would you like to support SYLoader by telling your friends?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Has completado tu primer descarga. ¿Quisieras apoyar SYLoader contándole a tus amigos?</translation>
     </message>
     <message>
         <location filename="../mainform.cpp" line="570"/>
@@ -284,38 +289,33 @@
     <message>
         <location filename="../main_window.ui" line="142"/>
         <source>Show the download list</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mostrar la lista de descargas</translation>
     </message>
     <message>
         <location filename="../main_window.ui" line="171"/>
         <source>Show settings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mostrar configuración</translation>
     </message>
     <message>
         <location filename="../main_window.ui" line="200"/>
         <source>Show information about SYLoader</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mostrar información acerca de SYLoader</translation>
     </message>
     <message>
         <location filename="../main_window.ui" line="223"/>
         <source>SYLoader on Facebook!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">SYLoader en Facebook!</translation>
     </message>
     <message>
         <location filename="../main_window.ui" line="246"/>
         <source>SYLoader on Twitter!</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">SYLoader en Twitter!</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="307"/>
         <location filename="../mainwindow.cpp" line="202"/>
         <source>Downloads</source>
         <translation type="unfinished">Descargas</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="117"/>
-        <source>SYLoader has a new version available. You should get the new version in order to continue downloading. Go to downloads page?</source>
-        <translation type="unfinished">SYLoader tiene una nueva version disponible. Tu deberias obtener la nueva version para continuar descargando. Ir a la pagina de descargas?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="127"/>
@@ -356,12 +356,17 @@
     <message>
         <location filename="../main_window.cpp" line="263"/>
         <source>SYLoader has a new version available. You are advised to get the new improved version. Go to download page?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">SYLoader tiene una nueva versión disponible. Se recomienda obtener la nueva versión mejorada. ¿Ir a la página de descarga?</translation>
     </message>
     <message>
         <location filename="../main_window.cpp" line="295"/>
         <source>Required Updates</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Actualizaciones necesarias</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="117"/>
+        <source>SYLoader has a new version available. You should get the new version in order to continue downloading. Go to downloads page?</source>
+        <translation type="unfinished">SYLoader tiene una nueva version disponible. Tu deberias obtener la nueva version para continuar descargando. Ir a la pagina de descargas?</translation>
     </message>
 </context>
 <context>
@@ -438,7 +443,7 @@
     <message>
         <location filename="../update_form.ui" line="450"/>
         <source>Installing required updates. Please wait...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Instalando actualizaciones necesarias. Por favor espere...</translation>
     </message>
 </context>
 <context>

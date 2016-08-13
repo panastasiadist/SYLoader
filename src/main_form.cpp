@@ -259,6 +259,12 @@ MainForm::onStartClicked()
                                 ->selectionModel()
                                 ->selection().indexes();
 
+    // Check if a row is selected before.
+
+    if (indexes.count() == 0) {
+        return;
+    }
+
     int rowIndex = indexes.at(0).row();
     int downloadId = _idToRowIndex.key(rowIndex);
 
@@ -300,6 +306,12 @@ MainForm::onStopClicked()
                                 ->tvwDownloads
                                 ->selectionModel()
                                 ->selection().indexes();
+
+    // Check if a row is selected before.
+
+    if (indexes.count() == 0) {
+        return;
+    }
 
     int rowIndex = indexes.at(0).row();
     int downloadId = _idToRowIndex.key(rowIndex);
@@ -346,6 +358,12 @@ MainForm::onDeleteClicked()
                                 ->tvwDownloads
                                 ->selectionModel()
                                 ->selection().indexes();
+
+    // Check if a row is selected before.
+
+    if (indexes.count() == 0) {
+        return;
+    }
 
     int rowIndex = indexes.at(0).row();
     int downloadId = _idToRowIndex.key(rowIndex);
@@ -469,7 +487,7 @@ MainForm::onDownloadStatusChanged(int id, Downloader::Status status)
 
     if (status != Downloader::Ready && status != Downloader::Downloading)
     {
-        if (Settings->value("autostart") == true) {
+        if (Settings->value("autostart", QVariant(true)) == true) {
             _processor.process();
         }
     }
@@ -593,10 +611,10 @@ MainForm::onParserFinished(QList<Download> downloads)
         QStandardItem *speedItem = new QStandardItem("");
         QStandardItem *etaItem = new QStandardItem("");
 
-        statusItem->setTextAlignment(Qt::AlignHCenter);
-        progressItem->setTextAlignment(Qt::AlignHCenter);
-        speedItem->setTextAlignment(Qt::AlignHCenter);
-        etaItem->setTextAlignment(Qt::AlignHCenter);
+        statusItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        progressItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        speedItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        etaItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 
         QList<QStandardItem *> list;
         list << titleItem;

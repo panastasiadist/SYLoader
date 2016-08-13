@@ -311,4 +311,22 @@ MainWindow::onUpdateInstallationFinished(bool success)
     ui->btnMain->setVisible(true);
     ui->btnSettings->setVisible(true);
     ui->btnAbout->setVisible(true);
+
+    if (success == false)
+    {
+#ifdef Q_OS_WIN32
+        QString message = tr("SYLoader failed to install updates. Please try "
+                             "closing SYLoader and launching it as "
+                             "Administrator (right click on shortcut)");
+#else
+        QString message = tr("SYLoader failed to install updates. Make sure "
+                             "that SYLoader has permission to write in its "
+                             "directory");
+#endif
+        QMessageBox::information(
+                    this,
+                    tr("Update failed"),
+                    message,
+                    QMessageBox::Ok);
+    }
 }
