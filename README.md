@@ -1,22 +1,24 @@
 ## About
 
-**SYLoader** is a cross platform YouTube Downloader which is easy to use, featuring essential smart features and safe defaults.
+**SYLoader** is a free, easy, cross platform YouTube Downloader featuring smart features and safe defaults.
 
 ## Features
+* Support for YouTube, Facebook, Vimeo, Dailymotion.
 * Playlist Downloading
 * Smart Clipboard Grabbing
 * Auto-Downloading
 * Automatic ID3 Tagging
-* Automatic MP3 Conversion
+* Automatic Conversion to MP3, MP4, AVI, OGG or OGV file formats
 * Unlimited Concurrent Downloads
 * Queue Management
-* Language Support
+* Translation Support
 * Cross Platform
 
 ## Out of the box Language Support
 
 * English
 * Greek
+* Spanish
 
 ## Availability
 
@@ -26,11 +28,11 @@
 
 ## Installation
 
-Choose a package for your Windows or Linux system [here](http://panastas91.github.io/SYLoader/).
+Choose a package for your Windows or Linux system [here](http://panastasiadist.github.io/SYLoader/).
 
 ## Development & Requirements
 
-* Qt 5.0+
+* Qt 5.6+
 * C++ compiler
 
 ## Involve
