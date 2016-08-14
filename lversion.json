@@ -1,0 +1,10 @@
+{
+	"syloader": {
+		"version": "1.1.0"
+	},
+	"youtubedl": {
+		"version": "2016.08.13",
+		"package_win": "https://yt-dl.org/downloads/latest/youtube-dl.exe",
+		"package_lin": "https://yt-dl.org/downloads/latest/youtube-dl"
+	}
+}
