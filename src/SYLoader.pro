@@ -61,7 +61,7 @@ FORMS += \
 RESOURCES += \
     resources.qrc
 
-RC_ICONS = logo.ico
+win32:RC_ICONS += logo.ico
 
 # Comment it if you want update check disabled
 # Useful if you need to have a package manager aware build.
