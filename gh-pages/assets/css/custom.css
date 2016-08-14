@@ -1,0 +1,47 @@
+h1 {
+    font-family:'Ubuntu', sans-serif;
+}
+
+
+h2,
+h3 {
+    font-family:"Roboto", sans-serif;
+    font-weight: 100
+}
+
+
+p,
+a,
+a.button,
+.special span.label  {
+    font-family: 'Ubuntu', sans-serif;
+}
+
+body .wrapper.style2 .button.special {
+    transition: all 0.5s ease-in-out !important;
+}
+
+body .wrapper.style2 .button.special:hover {
+    background-color:#E13737
+}
+
+section.special .icons .icon {
+    color:#E13737;
+}
+
+#header .icons .icon {
+    transition: all 0.5s ease-in-out !important;
+}
+
+#header .icons .icon:hover {
+    color:#E13737
+}
+
+#footer .icons .icon {
+    color:#4696E5;
+    transition: all 0.5s ease-in-out !important;
+}
+
+#footer .icons .icon:hover {
+    color:#E13737
+}
