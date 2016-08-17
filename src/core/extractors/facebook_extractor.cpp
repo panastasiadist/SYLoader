@@ -36,7 +36,12 @@
 bool
 FacebookExtractor::isSupported(QString url)
 {
-    return url.contains("facebook.com/video.php?v=");
+    if (url.contains("facebook.com") == false) {
+        return false;
+    }
+
+
+    return url.contains("video.php?v=") || url.contains("/videos/");
 }
 
 

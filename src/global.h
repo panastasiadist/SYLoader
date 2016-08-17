@@ -43,7 +43,7 @@
 
 #define SOFTWARE_VERSION_MAJOR 1
 #define SOFTWARE_VERSION_MINOR 1
-#define SOFTWARE_VERSION_PATCH 0
+#define SOFTWARE_VERSION_PATCH 1
 #define UPDATE_CHECK_URL "http://panastasiadist.github.io/SYLoader/lversion.json"
 #define HOMEPAGE_URL "http://panastasiadist.github.io/SYLoader"
 #define DOWNLOADS_URL "http://panastasiadist.github.io/SYLoader"
