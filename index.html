@@ -42,6 +42,15 @@
         <link rel="stylesheet" href="gh-pages/assets/css/custom.css" />
 
 
+        <!-- Scripts -->
+		<script src="gh-pages/assets/js/jquery.min.js"></script>
+		<script src="gh-pages/assets/js/jquery.scrolly.min.js"></script>
+		<script src="gh-pages/assets/js/skel.min.js"></script>
+		<script src="gh-pages/assets/js/util.js"></script>
+		<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
+		<script src="gh-pages/assets/js/main.js"></script>
+
+
 		<script>
 		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -51,26 +60,27 @@
 		  ga('create', 'UA-37345476-5', 'auto');
 		  ga('send', 'pageview');
 		</script>
+
+        <script>
+    	  window.fbAsyncInit = function() {
+    	    FB.init({
+    	      appId      : '879728422080247',
+    	      xfbml      : true,
+    	      version    : 'v2.4'
+    	    });
+    	  };
+
+    	  (function(d, s, id){
+    	     var js, fjs = d.getElementsByTagName(s)[0];
+    	     if (d.getElementById(id)) {return;}
+    	     js = d.createElement(s); js.id = id;
+    	     js.src = "//connect.facebook.net/en_US/sdk.js";
+    	     fjs.parentNode.insertBefore(js, fjs);
+    	   }(document, 'script', 'facebook-jssdk'));
+    	</script>
+
 	</head>
 	<body id="top">
-	<script>
-	  window.fbAsyncInit = function() {
-	    FB.init({
-	      appId      : '879728422080247',
-	      xfbml      : true,
-	      version    : 'v2.4'
-	    });
-	  };
-
-	  (function(d, s, id){
-	     var js, fjs = d.getElementsByTagName(s)[0];
-	     if (d.getElementById(id)) {return;}
-	     js = d.createElement(s); js.id = id;
-	     js.src = "//connect.facebook.net/en_US/sdk.js";
-	     fjs.parentNode.insertBefore(js, fjs);
-	   }(document, 'script', 'facebook-jssdk'));
-	</script>
-
 		<!-- Header -->
 			<header id="header">
 				<div class="content">
@@ -210,13 +220,7 @@
 				<p class="copyright">&copy; <a target="_blank" href="https://panastasiadist.github.io">Panagiotis Anastasiadis</a>. Credits: <a href="http://html5up.net">HTML5 UP</a></p>
 			</footer>
 
-		<!-- Scripts -->
-			<script src="gh-pages/assets/js/jquery.min.js"></script>
-			<script src="gh-pages/assets/js/jquery.scrolly.min.js"></script>
-			<script src="gh-pages/assets/js/skel.min.js"></script>
-			<script src="gh-pages/assets/js/util.js"></script>
-			<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
-			<script src="gh-pages/assets/js/main.js"></script>
+
 
 	</body>
 </html>
