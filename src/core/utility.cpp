@@ -45,7 +45,7 @@
 QString
 Utility::cleanFilename(QString desiredFilename)
 {
-    return desiredFilename.replace(QRegExp("[<>:\"/\\|?*]"), QString("-"));
+    return desiredFilename.replace(QRegExp("[<>:\"/\\|?*]"), "");
 }
 
 

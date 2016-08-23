@@ -362,9 +362,13 @@ Downloader::onDownloadFinished()
 
                 // The filename so far contains the artist's name.
                 // Write it using ID3 tags.
+                // Delete " character as it will cause ffmpeg to fail.
+
+                artist = artist.replace("\"", "");
+                QString title = _download.title.replace("\"", "");
 
                 iargs += " -metadata artist=\"" + artist + "\" ";
-                iargs += " -metadata title=\"" + _download.title + "\" ";
+                iargs += " -metadata title=\"" + title + "\" ";
             }
 
             QString command;

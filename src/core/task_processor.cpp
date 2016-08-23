@@ -30,6 +30,7 @@
  * files in the program, then also delete it here.
  ******************************************************************************/
 #include "task_processor.h"
+#include <QDebug>
 
 
 
@@ -136,7 +137,6 @@ TaskProcessor::process()
 
     // Attempt to run the next processes in the queue up to concurrency limit.
 
-
     for (int i = 0; i < remaining; i++)
     {
         int pid = _queue.dequeue();
@@ -150,6 +150,8 @@ TaskProcessor::process()
                  SIGNAL(finished(int)),
                  this,
                  SLOT(onCompleted(int)));
+
+        qDebug() << command;
 
         process->start(command);
 
